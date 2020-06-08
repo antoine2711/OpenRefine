@@ -135,90 +135,90 @@ class ListFacet extends Facet {
   };
 
   _initializeUI() {
-    var self = this;
+  var self = this;
 
-    var facet_id = this._div.attr("id");
+  var facet_id = this._div.attr("id");
 
-    this._div.empty().show().html(
-      '<div class="facet-title" bind="facetTitle">' +
-        '<div class="grid-layout layout-tightest layout-full"><table><tr>' +
-          '<td width="1%">' +
-            '<a href="javascript:{}" title="'+$.i18n('core-facets/remove-facet')+'" class="facet-title-remove" bind="removeButton">&nbsp;</a>' +
-          '</td>' +
-          '<td width="1%">' +
-            '<a href="javascript:{}" title="'+$.i18n('core-facets/minimize-facet')+'" class="facet-title-minimize" bind="minimizeButton">&nbsp;</a>' +
-          '</td>' +
-          '<td>' +
-            '<a href="javascript:{}" class="facet-choice-link" bind="resetButton">'+$.i18n('core-facets/reset')+'</a>' +
-            '<a href="javascript:{}" class="facet-choice-link" bind="invertButton">'+$.i18n('core-facets/invert')+'</a>' +
-            '<a href="javascript:{}" class="facet-choice-link" bind="changeButton">'+$.i18n('core-facets/change')+'</a>' +
-            '<span bind="titleSpan"></span>' +
-          '</td>' +
-        '</tr></table></div>' +
-      '</div>' +
-      '<div class="facet-expression" bind="expressionDiv" title="'+$.i18n('core-facets/click-to-edit')+'"></div>' +
-      '<div class="facet-controls" bind="controlsDiv" style="display:none;">' +
-        '<a bind="choiceCountContainer" class="action" href="javascript:{}"></a> ' +
-        '<span class="facet-controls-sortControls" bind="sortGroup">'+$.i18n('core-facets/sort-by')+': ' +
-          '<a href="javascript:{}" bind="sortByNameLink">'+$.i18n('core-facets/name')+'</a>' +
-          '<a href="javascript:{}" bind="sortByCountLink">'+$.i18n('core-facets/count')+'</a>' +
-        '</span>' +
-        '<button bind="clusterLink" class="facet-controls-button button">'+$.i18n('core-facets/cluster')+'</button>' +
-      '</div>' +
-      '<div class="facet-body" bind="bodyDiv">' +
-        '<div class="facet-body-inner" bind="bodyInnerDiv"></div>' +
-      '</div>'
-    );
-    this._elmts = DOM.bind(this._div);
-
-    this._elmts.titleSpan.text(this._config.name);
-    this._elmts.changeButton.attr("title",$.i18n('core-facets/current-exp')+": " + this._config.expression).click(function() {
-      self._elmts.expressionDiv.slideToggle(100, function() {
-        if (self._elmts.expressionDiv.css("display") != "none") {
-          self._editExpression();
-        }
-      });
-    });
-    
-    this._elmts.expressionDiv.text(this._config.expression).hide().click(function() { self._editExpression(); });
-    this._elmts.removeButton.click(function() { self._remove(); });
-    this._elmts.minimizeButton.click(function() { self._minimize(); });
-    this._elmts.resetButton.click(function() { self._reset(); });
-    this._elmts.invertButton.click(function() { self._invert(); });
-
-    this._elmts.choiceCountContainer.click(function() { self._copyChoices(); });
-    this._elmts.sortByCountLink.click(function() {
-      if (self._options.sort != "count") {
-        self._options.sort = "count";
-        self._reSortChoices();
-        self._update(true);
+  this._div.empty().show().html(
+    '<div class="facet-title" bind="facetTitle">' +
+      '<div class="grid-layout layout-tightest layout-full"><table><tr>' +
+        '<td width="1%">' +
+          '<a href="javascript:{}" title="'+$.i18n('core-facets/remove-facet')+'" class="facet-title-remove" bind="removeButton">&nbsp;</a>' +
+        '</td>' +
+        '<td width="1%">' +
+          '<a href="javascript:{}" title="'+$.i18n('core-facets/minimize-facet')+'" class="facet-title-minimize" bind="minimizeButton">&nbsp;</a>' +
+        '</td>' +
+        '<td>' +
+          '<a href="javascript:{}" class="facet-choice-link" bind="resetButton">'+$.i18n('core-facets/reset')+'</a>' +
+          '<a href="javascript:{}" class="facet-choice-link" bind="invertButton">'+$.i18n('core-facets/invert')+'</a>' +
+          '<a href="javascript:{}" class="facet-choice-link" bind="changeButton">'+$.i18n('core-facets/change')+'</a>' +
+          '<span class="facet-title-span" bind="titleSpan" title="Click here to edit the name of the facet"></span>' +
+        '</td>' +
+      '</tr></table></div>' +
+    '</div>' +
+    '<div class="facet-expression" bind="expressionDiv" title="'+$.i18n('core-facets/click-to-edit')+'"></div>' +
+    '<div class="facet-controls" bind="controlsDiv" style="display:none;">' +
+      '<a bind="choiceCountContainer" class="action" href="javascript:{}"></a> ' +
+      '<span class="facet-controls-sortControls" bind="sortGroup">'+$.i18n('core-facets/sort-by')+': ' +
+        '<a href="javascript:{}" bind="sortByNameLink">'+$.i18n('core-facets/name')+'</a>' +
+        '<a href="javascript:{}" bind="sortByCountLink">'+$.i18n('core-facets/count')+'</a>' +
+      '</span>' +
+      '<button bind="clusterLink" class="facet-controls-button button">'+$.i18n('core-facets/cluster')+'</button>' +
+    '</div>' +
+    '<div class="facet-body" bind="bodyDiv">' +
+      '<div class="facet-body-inner" bind="bodyInnerDiv"></div>' +
+    '</div>'
+  );
+  this._elmts = DOM.bind(this._div);
+  
+  this._elmts.titleSpan.text(this._config.name);
+  this._elmts.changeButton.attr("title",$.i18n('core-facets/current-exp')+": " + this._config.expression).click(function() {
+    self._elmts.expressionDiv.slideToggle(100, function() {
+      if (self._elmts.expressionDiv.css("display") != "none") {
+        self._editExpression();
       }
     });
-    this._elmts.sortByNameLink.click(function() {
-      if (self._options.sort != "name") {
-        self._options.sort = "name";
-        self._reSortChoices();
-        self._update(true);
+  });
+  
+  this._elmts.expressionDiv.text(this._config.expression).hide().click(function() { self._editExpression(); });
+  this._elmts.removeButton.click(function() { self._remove(); });
+  this._elmts.minimizeButton.click(function() { self._minimize(); });
+  this._elmts.resetButton.click(function() { self._reset(); });
+  this._elmts.invertButton.click(function() { self._invert(); });
+  this._elmts.titleSpan.click(function() { self._editTitle(); });
+  
+  this._elmts.choiceCountContainer.click(function() { self._copyChoices(); });
+  this._elmts.sortByCountLink.click(function() {
+    if (self._options.sort != "count") {
+      self._options.sort = "count";
+      self._reSortChoices();
+      self._update(true);
+    }
+  });
+  this._elmts.sortByNameLink.click(function() {
+    if (self._options.sort != "name") {
+      self._options.sort = "name";
+      self._reSortChoices();
+      self._update(true);
+    }
+  });
+
+  this._elmts.clusterLink.click(function() { self._doEdit(); });
+  if (this._config.expression != "value" && this._config.expression != "grel:value") {
+    this._elmts.clusterLink.hide();
+  }
+
+  if (!("scroll" in this._options) || this._options.scroll) {
+    this._elmts.bodyDiv.addClass("facet-body-scrollable");
+    this._elmts.bodyDiv.resizable({
+      minHeight: 30,
+      handles: 's',
+      stop: function(event, ui) {
+        event.target.style.width = "auto"; // don't force the width
       }
     });
-
-    this._elmts.clusterLink.click(function() { self._doEdit(); });
-    if (this._config.expression != "value" && this._config.expression != "grel:value") {
-      this._elmts.clusterLink.hide();
-    }
-
-    if (!("scroll" in this._options) || this._options.scroll) {
-      this._elmts.bodyDiv.addClass("facet-body-scrollable");
-      this._elmts.bodyDiv.resizable({
-        minHeight: 30,
-        handles: 's',
-        stop: function(event, ui) {
-          event.target.style.width = "auto"; // don't force the width
-        }
-      });
-    }
-  };
-
+  }
+  }
   _copyChoices() {
     var self = this;
     var frame = DialogSystem.createDialog();
@@ -516,6 +516,18 @@ class ListFacet extends Facet {
     new ClusteringDialog(this._config.columnName, this._config.expression);
   };
 
+	_editTitle = function() {
+		var currentFacetTitle = this._config.name;
+	
+		var promptText = "The current name of the facet is: "+ currentFacetTitle +".\n What name do you want now?";
+		var newFacetTitle = prompt(promptText, currentFacetTitle);
+
+		if (newFacetTitle != null) {
+			this._config.name = newFacetTitle;
+			this._elmts.titleSpan.text(this._config.name);
+		}
+	};
+
   _editChoice(choice, choiceDiv) {
     var self = this;
 
@@ -729,8 +741,3 @@ class ListFacet extends Facet {
     }
   };
 };
-
-ListFacet.reconstruct = function(div, uiState) {
-  return new ListFacet(div, uiState.c, uiState.o, uiState.s);
-};
-
