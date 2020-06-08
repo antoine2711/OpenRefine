@@ -163,15 +163,18 @@ class ListFacet extends GenericFacet {
     if (this._config.expression != "value" && this._config.expression != "grel:value") {
       this._elmts.clusterLink.hide();
     }
-    this._selection = selection;
-    this._reSortChoices();
-
-    this._blankChoice = data.blankChoice || null;
-    this._errorChoice = data.errorChoice || null;
-  }
-
-  this._update();
-};
+    
+    if (!("scroll" in this._options) || this._options.scroll) {
+      this._elmts.bodyDiv.addClass("facet-body-scrollable");
+      this._elmts.bodyDiv.resizable({
+        minHeight: 30,
+        handles: 's',
+        stop: function(event, ui) {
+          event.target.style.width = "auto"; // don't force the width
+        }
+      });
+    }
+  };
 
   _copyChoices = function() {
     var self = this;
