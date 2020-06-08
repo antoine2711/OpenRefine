@@ -121,7 +121,7 @@ class ListFacet extends GenericFacet {
             '<a href="javascript:{}" class="facet-choice-link" bind="resetButton">'+$.i18n('core-facets/reset')+'</a>' +
             '<a href="javascript:{}" class="facet-choice-link" bind="invertButton">'+$.i18n('core-facets/invert')+'</a>' +
             '<a href="javascript:{}" class="facet-choice-link" bind="changeButton">'+$.i18n('core-facets/change')+'</a>' +
-            '<span bind="titleSpan"></span>' +
+            '<span class="facet-title-span" bind="titleSpan" title="Click here to edit the name of the facet"></span>' +
           '</td>' +
         '</tr></table></div>' +
       '</div>' +
@@ -163,18 +163,15 @@ class ListFacet extends GenericFacet {
     if (this._config.expression != "value" && this._config.expression != "grel:value") {
       this._elmts.clusterLink.hide();
     }
+    this._selection = selection;
+    this._reSortChoices();
 
-    if (!("scroll" in this._options) || this._options.scroll) {
-      this._elmts.bodyDiv.addClass("facet-body-scrollable");
-      this._elmts.bodyDiv.resizable({
-        minHeight: 30,
-        handles: 's',
-        stop: function(event, ui) {
-          event.target.style.width = "auto"; // don't force the width
-        }
-      });
-    }
-  };
+    this._blankChoice = data.blankChoice || null;
+    this._errorChoice = data.errorChoice || null;
+  }
+
+  this._update();
+};
 
   _copyChoices = function() {
     var self = this;
@@ -471,6 +468,18 @@ class ListFacet extends GenericFacet {
   _doEdit() {
     new ClusteringDialog(this._config.columnName, this._config.expression);
   };
+
+	_editTitle = function() {
+		var currentFacetTitle = this._config.name;
+	
+		var promptText = "The current name of the facet is: "+ currentFacetTitle +".\n What name do you want now?";
+		var newFacetTitle = prompt(promptText, currentFacetTitle);
+
+		if (newFacetTitle != null) {
+			this._config.name = newFacetTitle;
+			this._elmts.titleSpan.text(this._config.name);
+		}
+	};
 
   _editChoice(choice, choiceDiv) {
     var self = this;
