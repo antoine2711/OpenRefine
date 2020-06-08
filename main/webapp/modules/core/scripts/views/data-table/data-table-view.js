@@ -41,6 +41,7 @@ function DataTableView(div) {
   this._columnHeaderUIs = [];
   this._shownulls = false;
 
+  this._currentPageNumber = 1;
   this._showRows(0);
 }
 
@@ -81,6 +82,7 @@ DataTableView.prototype.resize = function() {
 };
 
 DataTableView.prototype.update = function(onDone) {
+  this._currentPageNumber = 1;
   this._showRows(0, onDone);
 };
 
@@ -107,6 +109,7 @@ DataTableView.prototype.render = function() {
     '</div>'
   );
   var elmts = DOM.bind(html);
+  this._div.empty().append(html);
 
   ui.summaryBar.updateResultCount();
 
@@ -134,7 +137,6 @@ DataTableView.prototype.render = function() {
   }
 
   this._renderDataTables(elmts.table[0], elmts.headerTable[0]);
-  this._div.empty().append(html);
 
   // show/hide null values in cells
   $(".data-table-null").toggle(self._shownulls);
@@ -160,6 +162,8 @@ DataTableView.prototype._renderSortingControls = function(sortingControls) {
 DataTableView.prototype._renderPagingControls = function(pageSizeControls, pagingControls) {
   var self = this;
 
+  self._lastPageNumber = Math.floor((theProject.rowModel.filtered - 1) / this._pageSize) + 1;
+
   var from = (theProject.rowModel.start + 1);
   var to = Math.min(theProject.rowModel.filtered, theProject.rowModel.start + theProject.rowModel.limit);
 
@@ -173,7 +177,23 @@ DataTableView.prototype._renderPagingControls = function(pageSizeControls, pagin
     previousPage.addClass("inaction");
   }
 
-  $('<span>').addClass("viewpanel-pagingcount").html(" " + from + " - " + to + " ").appendTo(pagingControls);
+  var pageControlsSpan = $('<span>').attr("id", "viewpanel-paging-current");
+  
+  var pageInputSize = 20 + (8 * ui.dataTableView._lastPageNumber.toString().length);
+  var currentPageInput = $('<input type="number">')
+    .change(function(evt) { self._onChangeGotoPage(this, evt); })
+    .keydown(function(evt) { self._onKeyDownGotoPage(this, evt); })
+    .attr("id", "viewpanel-paging-current-input")
+    .attr("min", 1)
+    .attr("max", self._lastPageNumber)
+    .attr("required", "required")
+    .val(self._currentPageNumber)
+    .css("width", pageInputSize +"px");
+    
+  pageControlsSpan.append($.i18n('core-views/goto-page', '<span id="currentPageInput" />', self._lastPageNumber));
+  pageControlsSpan.appendTo(pagingControls);
+
+  $('span#currentPageInput').replaceWith($(currentPageInput));
 
   var nextPage = $('<a href="javascript:{}">'+$.i18n('core-views/next')+' &rsaquo;</a>').appendTo(pagingControls);
   var lastPage = $('<a href="javascript:{}">'+$.i18n('core-views/last')+' &raquo;</a>').appendTo(pagingControls);
@@ -493,20 +513,85 @@ DataTableView.prototype._showRows = function(start, onDone) {
   }, this._sorting);
 };
 
+DataTableView.prototype._onChangeGotoPage = function(elmt, evt) {
+  var gotoPageNumber = parseInt($('input#viewpanel-paging-current-input').val());
+  
+  if(typeof gotoPageNumber != "number" || isNaN(gotoPageNumber) || gotoPageNumber == "") { 
+    $('input#viewpanel-paging-current-input').val(this._currentPageNumber); 
+    return;
+  }
+  
+  if(gotoPageNumber > this._lastPageNumber) gotoPageNumber = this._lastPageNumber;
+  if(gotoPageNumber < 1) gotoPageNumber = 1;
+  
+  this._currentPageNumber = gotoPageNumber;
+  this._showRows((gotoPageNumber - 1) * this._pageSize);
+};
+
+DataTableView.prototype._onKeyDownGotoPage = function(elmt, evt) {
+  var keyDownCode = event.which;
+  
+  if([38, 40].indexOf(keyDownCode) == -1) return;
+  
+  evt.preventDefault();
+
+  var newPageValue = $('input#viewpanel-paging-current-input')[0].value;
+  if(keyDownCode == 38) {  // Up arrow
+    if(newPageValue <= 1) return;
+    this._onClickPreviousPage(elmt, evt);
+  }
+    
+  if(keyDownCode == 40) {  // Down arrow
+    if(newPageValue >= this._lastPageNumber) return;
+    this._onClickNextPage(elmt, evt);
+  }
+  
+  // For the arrow keys, in order to have a keyDownRepeat, we have to put the focus back on the « currentPageInput »
+  // The <input> seams to be deleted and recreated, so we wait with a few setTimeout() until it is there, unless 1 s. elapse, then we stop
+  const refocusDelay = 50;
+  const refocusMaxNumberOfTimes = 20;
+  var   refocusNumberOfTimes = 0;
+  var   refocusCurrentPageInput = function() { 
+    try {
+      var currentPageInput = $('input#viewpanel-paging-current-input')[0];
+
+      if(currentPageInput != null) {
+        currentPageInput.focus();
+
+        if(currentPageInput == document.activeElement) return;
+      }
+
+      throw new Error('Requesting a new refocusPageInput');
+    }
+    
+    catch(currentError) {
+      refocusNumberOfTimes++;
+      if(refocusNumberOfTimes > refocusMaxNumberOfTimes) return;
+      window.setTimeout(refocusCurrentPageInput, refocusDelay);
+    }
+  };
+
+  window.setTimeout(refocusCurrentPageInput, refocusDelay);
+};
+
 DataTableView.prototype._onClickPreviousPage = function(elmt, evt) {
+  this._currentPageNumber--;
   this._showRows(theProject.rowModel.start - this._pageSize);
 };
 
 DataTableView.prototype._onClickNextPage = function(elmt, evt) {
+  this._currentPageNumber++;
   this._showRows(theProject.rowModel.start + this._pageSize);
 };
 
 DataTableView.prototype._onClickFirstPage = function(elmt, evt) {
+  this._currentPageNumber = 1;
   this._showRows(0);
 };
 
 DataTableView.prototype._onClickLastPage = function(elmt, evt) {
-  this._showRows(Math.floor((theProject.rowModel.filtered - 1) / this._pageSize) * this._pageSize);
+  this._currentPageNumber = this._lastPageNumber;
+  this._showRows((this._lastPageNumber - 1) * this._pageSize);
 };
 
 DataTableView.prototype._getSortingCriteriaCount = function() {
