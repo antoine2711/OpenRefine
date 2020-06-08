@@ -32,6 +32,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 var theProject;
+var thePreferences;
 var ui = {};
 
 var lang = (navigator.language|| navigator.userLanguage).split("-")[0];
@@ -226,9 +227,9 @@ Refine.reinitializeProjectData = function(f, fError) {
                     }
                   } else {
                     if (preferences != null) {
-                      theProject.preferences = preferences;
+                      thePreferences = preferences;
                     }
-                    f();  // f(null);
+                    f();
                   }
                 },
                 'json'
@@ -242,6 +243,30 @@ Refine.reinitializeProjectData = function(f, fError) {
     'json'
   );
 };
+
+Refine.getPreference = function(key, defaultValue) { 
+  if(!thePreferences.hasOwnProperty(key)) { return defaultValue; }
+
+  return thePreferences[key];
+}
+
+Refine.setPreference = function(key, newValue) { 
+  thePreferences[key] = newValue;
+
+  Refine.wrapCSRF(function(token) {
+    $.ajax({
+      async: false,
+      type: "POST",
+      url: "command/core/set-preference?" + $.param({ name: key }),
+      data: {
+        "value" : JSON.stringify(newValue), 
+        csrf_token: token
+      },
+      success: function(data) { },
+      dataType: "json"
+    });
+  });
+}
 
 Refine._renameProject = function() {
   var name = window.prompt($.i18n('core-index/new-proj-name'), theProject.metadata.name);
