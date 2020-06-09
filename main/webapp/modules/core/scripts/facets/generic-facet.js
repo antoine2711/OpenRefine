@@ -106,6 +106,7 @@ class GenericFacet {
     this._elmts.saveConfigButton.click(function() { self._saveConfig(); });
     this._elmts.minimizeButton.click(function() { self._minimize(); });
     this._elmts.resetButton.click(function() { self._reset(); });    
+    this._elmts.titleSpan.click(function() { self._editTitle(); });   
   }
   
   _reset() {
