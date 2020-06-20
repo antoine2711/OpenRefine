@@ -65,9 +65,9 @@ Refine.reportException = function(e) {
 function resize() {
   var leftPanelWidth = JSON.parse(Refine.getPreference("ui.toolPanelWidth", 300));
   if(typeof leftPanelWidth != "number" || leftPanelWidth < 200 || leftPanelWidth > 500) { 
-    leftPanelWidth = 300; 
+    leftPanelWidth = 300;
   }
-
+  
   var width = $(window).width();
   var top = $("#header").outerHeight();
   var height = $(window).height() - top;
@@ -76,8 +76,8 @@ function resize() {
 
   var leftPanelPaddings = ui.leftPanelDiv.outerHeight(true) - ui.leftPanelDiv.height();
   ui.leftPanelDiv
-  .css("top", top + "px")
-  .css("left", "0px")
+//  .css("top", top + "px")
+//  .css("left", "0px")
   .css("height", (height - leftPanelPaddings) + "px")
   .css("width", leftPanelWidth + "px");
 
@@ -87,10 +87,10 @@ function resize() {
   var rightPanelVPaddings = ui.rightPanelDiv.outerHeight(true) - ui.rightPanelDiv.height();
   var rightPanelHPaddings = ui.rightPanelDiv.outerWidth(true) - ui.rightPanelDiv.width();
   ui.rightPanelDiv
-  .css("top", top + "px")
-  .css("left", leftPanelWidth + "px")
+//  .css("top", top + "px")
+//  .css("left", leftPanelWidth + "px")
   .css("height", (height - rightPanelVPaddings) + "px")
-  .css("width", (width - leftPanelWidth - rightPanelHPaddings) + "px");
+  .css("width", (width - leftPanelWidth - rightPanelHPaddings - 5) + "px");
 
   ui.viewPanelDiv.height((height - ui.toolPanelDiv.outerHeight() - rightPanelVPaddings) + "px");
 
@@ -175,7 +175,26 @@ function initializeUI(uiState) {
   });
 
   $(window).bind("resize", resizeAll);
-
+  
+  $(ui.leftPanelDiv).resizable({
+    // only use the eastern handle
+    handles: 'e',
+    // restrict the width range
+    minWidth: 200,
+    maxWidth: $(window).width(),
+    // resize handler updates the content panel width
+    resize: function(event, ui){
+      windowWidth = $(window).width();
+      var currentWidth = ui.size.width;
+      var padding = 0; 
+  
+      // $(this).width(currentWidth);
+  
+      // set the content panel width
+      $("#content").width(windowWidth - currentWidth - padding);
+    }
+  });
+  
   if (uiState.facets) {
     Refine.update({ engineChanged: true });
   }
