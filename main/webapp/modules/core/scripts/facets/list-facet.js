@@ -135,9 +135,6 @@ class ListFacet extends Facet {
   };
 
   _initializeUI() {
-  var self = this;
-
-  var facet_id = this._div.attr("id");
 
   this._div.empty().show().html(
     '<div class="facet-title" bind="facetTitle">' +
@@ -152,7 +149,7 @@ class ListFacet extends Facet {
           '<a href="javascript:{}" class="facet-choice-link" bind="resetButton">'+$.i18n('core-facets/reset')+'</a>' +
           '<a href="javascript:{}" class="facet-choice-link" bind="invertButton">'+$.i18n('core-facets/invert')+'</a>' +
           '<a href="javascript:{}" class="facet-choice-link" bind="changeButton">'+$.i18n('core-facets/change')+'</a>' +
-          '<span class="facet-title-span" bind="titleSpan" title="Click here to edit the name of the facet"></span>' +
+          '<span class="facet-title-span" bind="titleSpan" title="'+$.i18n('core-facets/edit-facet-title')+'"></span>' +
         '</td>' +
       '</tr></table></div>' +
     '</div>' +
@@ -176,25 +173,26 @@ class ListFacet extends Facet {
     self._elmts.expressionDiv.slideToggle(100, function() {
       if (self._elmts.expressionDiv.css("display") != "none") {
         self._editExpression();
+        }
+      });
+    });
+    
+    this._elmts.expressionDiv.text(this._config.expression).hide().click(function() { self._editExpression(); });
+    this._elmts.removeButton.click(function() { self._remove(); });
+    this._elmts.minimizeButton.click(function() { self._minimize(); });
+    this._elmts.resetButton.click(function() { self._reset(); });
+    this._elmts.invertButton.click(function() { self._invert(); });
+
+    this._elmts.choiceCountContainer.click(function() { self._copyChoices(); });
+    this._elmts.sortByCountLink.click(function() {
+      if (self._options.sort != "count") {
+        self._options.sort = "count";
+        self._reSortChoices();
+        self._update(true);
       }
     });
   });
   
-  this._elmts.expressionDiv.text(this._config.expression).hide().click(function() { self._editExpression(); });
-  this._elmts.removeButton.click(function() { self._remove(); });
-  this._elmts.minimizeButton.click(function() { self._minimize(); });
-  this._elmts.resetButton.click(function() { self._reset(); });
-  this._elmts.invertButton.click(function() { self._invert(); });
-  this._elmts.titleSpan.click(function() { self._editTitle(); });
-  
-  this._elmts.choiceCountContainer.click(function() { self._copyChoices(); });
-  this._elmts.sortByCountLink.click(function() {
-    if (self._options.sort != "count") {
-      self._options.sort = "count";
-      self._reSortChoices();
-      self._update(true);
-    }
-  });
   this._elmts.sortByNameLink.click(function() {
     if (self._options.sort != "name") {
       self._options.sort = "name";
