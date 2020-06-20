@@ -449,6 +449,8 @@ function init() {
       "externals/jquery.i18n.language.js",
       "externals/underscore-min.js",
 
+      "scripts/util/preferences.js",
+
       "scripts/project.js",
 
       "scripts/util/misc.js",
@@ -568,7 +570,8 @@ function init() {
       "externals/languages/ru.js",
 
       "externals/underscore-min.js",
-      "scripts/preferences.js",
+      "scripts/util/preferences.js",
+      "scripts/preferences.js"
     ]
   );
   ClientSideResourceManager.addPaths(

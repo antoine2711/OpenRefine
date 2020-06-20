@@ -10,6 +10,7 @@
     "core-index/change-value": "Change value of preference key",
     "core-index/delete-key": "Delete preference key",
     "core-index/preferences": "Preferences",
+    "core-index/prefs-loading-failed": "Failed to load the preferences.",
     "core-index/key": "Key",
     "core-index/value": "Value",
     "core-index/add-pref": "Add preference",

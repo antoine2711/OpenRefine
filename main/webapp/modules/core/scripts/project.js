@@ -193,62 +193,34 @@ Refine.setTitle = function(status) {
 };
 
 Refine.reinitializeProjectData = function(f, fError) {
-  $.getJSON(
-    "command/core/get-project-metadata?" + $.param({ project: theProject.id }), null,
-    function(data) {
+  if(f === null) f = function() {};
+  if(fError === null) fError = function() {};
+  
+  Promise.all([
+    Promise.resolve($.getJSON("command/core/get-project-metadata", { project: theProject.id }))
+    .then(data => {
       if (data.status == "error") {
-        alert(data.message);
-        if (fError) {
-          fError();
-        }
+        throw new Error(data.message);
       } else {
         theProject.metadata = data;
-        $.getJSON(
-          "command/core/get-models?" + $.param({ project: theProject.id }), null,
-          function(data) {
-            if (data.status == "error") {
-              alert(data.message);
-              if (fError) {
-                fError();
-              }
-            } else {
-              for (var n in data) {
-                if (data.hasOwnProperty(n)) {
-                  theProject[n] = data[n];
-                }
-              }
-              $.post(
-                "command/core/get-all-preferences", null,
-                function(preferences) {
-                  if (preferences.status == "error") {
-                    alert(preferences.message);
-                    if (fError) {
-                      fError();
-                    }
-                  } else {
-                    if (preferences != null) {
-                      thePreferences = preferences;
-                    }
-                    f();
-                  }
-                },
-                'json'
-              );
-            }
-          },
-          'json'
-        );
       }
-    },
-    'json'
-  );
+    }),
+    $.getJSON("command/core/get-models", { project: theProject.id })
+    .then(data => {
+      for (let [key, value] of Object.entries(data)) {
+        theProject[key] = value;
+      }
+    }),
+  ]).then(f).catch(errmsg => { alert(errmsg); fError()} );
+  
+  PreferencesUtils.loadPreferences(f, fError);
 };
 
 Refine.getPreference = function(key, defaultValue) { 
   if(!thePreferences.hasOwnProperty(key)) { return defaultValue; }
 
   return thePreferences[key];
-}
+};
 
 Refine.setPreference = function(key, newValue) { 
   thePreferences[key] = newValue;
@@ -266,7 +238,7 @@ Refine.setPreference = function(key, newValue) {
       dataType: "json"
     });
   });
-}
+};
 
 Refine._renameProject = function() {
   var name = window.prompt($.i18n('core-index/new-proj-name'), theProject.metadata.name);
