@@ -737,7 +737,8 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
               {
                 "name" : $.i18n('core-views/starred-rows'),
                 "columnName" : "", 
-                "expression" : "row.starred"
+                "expression" : "row.starred",
+                "source" : "stars"
               },
               {
                 "scroll" : false
@@ -754,7 +755,8 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
               {
                 "name" : $.i18n('core-views/flagged-rows'),
                 "columnName" : "", 
-                "expression" : "row.flagged"
+                "expression" : "row.flagged",
+                "source" : "flags"
               },
               {
                 "scroll" : false
@@ -771,7 +773,8 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
               {
                 "name" : $.i18n('core-views/blank-rows'),
                 "columnName" : "", 
-                "expression" : "(filter(row.columnNames,cn,isNonBlank(cells[cn].value)).length()==0).toString()"
+                "expression" : "(filter(row.columnNames,cn,isNonBlank(cells[cn].value)).length()==0).toString()",
+                "source" : "blank-rows"
               },
               {
                 "scroll" : false
@@ -788,7 +791,8 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
                 {
                   "name" : $.i18n('core-views/blank-values'),
                   "columnName" : "",
-                  "expression" : "filter(row.columnNames,cn,isBlank(cells[cn].value))"
+                  "expression" : "filter(row.columnNames,cn,isBlank(cells[cn].value))",
+                  "source" : "blank-values"
                 },
                 {
                   "scroll" : false
@@ -805,7 +809,8 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
                 {
                   "name" : $.i18n('core-views/blank-records'),
                   "columnName" : "",
-                  "expression" : "filter(row.columnNames,cn,isBlank(if(row.record.fromRowIndex==row.index,row.record.cells[cn].value.join(\"\"),true)))"
+                  "expression" : "filter(row.columnNames,cn,isBlank(if(row.record.fromRowIndex==row.index,row.record.cells[cn].value.join(\"\"),true)))",
+                  "source" : "blank-records"
                 },
                 {
                   "scroll" : false
@@ -822,7 +827,8 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
               {
                 "name" : $.i18n('core-views/non-blank-values'),
                 "columnName" : "", 
-                "expression" : "filter(row.columnNames,cn,isNonBlank(cells[cn].value))"
+                "expression" : "filter(row.columnNames,cn,isNonBlank(cells[cn].value))",
+                "source" : "non-blank-values"
               },
               {
                 "scroll" : false
@@ -839,7 +845,8 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
               {
                 "name" : $.i18n('core-views/non-blank-records'),
                 "columnName" : "", 
-                "expression" : "filter(row.columnNames,cn,isNonBlank(if(row.record.fromRowIndex==row.index,row.record.cells[cn].value.join(\"\"),null)))"
+                "expression" : "filter(row.columnNames,cn,isNonBlank(if(row.record.fromRowIndex==row.index,row.record.cells[cn].value.join(\"\"),null)))",
+                "source" : "non-blank-records"
               },
               {
                 "scroll" : false
