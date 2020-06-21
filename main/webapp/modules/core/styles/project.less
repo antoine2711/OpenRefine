@@ -33,8 +33,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 @import-less url("theme.less");
 
+body {
+  overflow: hidden;
+  }
+  
 #body {
-  display: none;
+  display: flex;
   }
   
 #project-title, #project-controls {
@@ -73,7 +77,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   }
 
 #left-panel {
-  display: inline-block;
+  flex-grow: 0;
   overflow: hidden;
   padding: 0px;
   padding-top: @padding_tight;
@@ -89,7 +93,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   }
 
 #right-panel {
-  display: inline-block;
+  flex-grow: 0;
   overflow: hidden;
   padding: 0px;
   padding-left: @padding_tight;

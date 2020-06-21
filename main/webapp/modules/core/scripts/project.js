@@ -63,6 +63,9 @@ Refine.reportException = function(e) {
 };
 
 function resize() {
+}
+
+function setInitialSize() {
   var leftPanelWidth = JSON.parse(Refine.getPreference("ui.toolPanelWidth", 300));
   if(typeof leftPanelWidth != "number" || leftPanelWidth < 200 || leftPanelWidth > 500) { 
     leftPanelWidth = 300;
@@ -78,7 +81,7 @@ function resize() {
   ui.leftPanelDiv
 //  .css("top", top + "px")
 //  .css("left", "0px")
-  .css("height", (height - leftPanelPaddings) + "px")
+//  .css("height", (height - leftPanelPaddings) + "px")
   .css("width", leftPanelWidth + "px");
 
   var leftPanelTabsPaddings = ui.leftPanelTabs.outerHeight(true) - ui.leftPanelTabs.height();
@@ -89,8 +92,8 @@ function resize() {
   ui.rightPanelDiv
 //  .css("top", top + "px")
 //  .css("left", leftPanelWidth + "px")
-  .css("height", (height - rightPanelVPaddings) + "px")
-  .css("width", (width - leftPanelWidth - rightPanelHPaddings - 5) + "px");
+//  .css("height", (height - rightPanelVPaddings) + "px")
+  .css("width", width + "px");
 
   ui.viewPanelDiv.height((height - ui.toolPanelDiv.outerHeight() - rightPanelVPaddings) + "px");
 
@@ -112,6 +115,8 @@ function resizeTabs() {
 }
 
 function resizeAll() {
+  return;
+  
   resize();
   resizeTabs();
   ui.extensionBar.resize();
@@ -188,7 +193,7 @@ function initializeUI(uiState) {
       var currentWidth = ui.size.width;
       var padding = 0; 
   
-      // $(this).width(currentWidth);
+      $(this).width(currentWidth);
   
       // set the content panel width
       $("#content").width(windowWidth - currentWidth - padding);
