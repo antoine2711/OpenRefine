@@ -738,7 +738,7 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
                 "name" : $.i18n('core-views/starred-rows'),
                 "columnName" : "", 
                 "expression" : "row.starred",
-                "id" : 2
+                "source" : "stars"
               },
               {
                 "scroll" : false
@@ -756,7 +756,7 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
                 "name" : $.i18n('core-views/flagged-rows'),
                 "columnName" : "", 
                 "expression" : "row.flagged",
-                "id" : 3
+                "source" : "flags"
               },
               {
                 "scroll" : false
@@ -774,7 +774,7 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
                 "name" : $.i18n('core-views/blank-rows'),
                 "columnName" : "", 
                 "expression" : "(filter(row.columnNames,cn,isNonBlank(cells[cn].value)).length()==0).toString()",
-                "id" : 4
+                "source" : "blank-rows"
               },
               {
                 "scroll" : false
@@ -792,7 +792,7 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
                   "name" : $.i18n('core-views/blank-values'),
                   "columnName" : "",
                   "expression" : "filter(row.columnNames,cn,isBlank(cells[cn].value))",
-                  "id" : 5
+                  "source" : "blank-values"
                 },
                 {
                   "scroll" : false
@@ -810,7 +810,7 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
                   "name" : $.i18n('core-views/blank-records'),
                   "columnName" : "",
                   "expression" : "filter(row.columnNames,cn,isBlank(if(row.record.fromRowIndex==row.index,row.record.cells[cn].value.join(\"\"),true)))",
-                  "id" : 6
+                  "source" : "blank-records"
                 },
                 {
                   "scroll" : false
@@ -828,7 +828,7 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
                 "name" : $.i18n('core-views/non-blank-values'),
                 "columnName" : "", 
                 "expression" : "filter(row.columnNames,cn,isNonBlank(cells[cn].value))",
-                "id" : 7
+                "source" : "non-blank-values"
               },
               {
                 "scroll" : false
@@ -846,7 +846,7 @@ DataTableView.prototype._createMenuForAllColumns = function(elmt) {
                 "name" : $.i18n('core-views/non-blank-records'),
                 "columnName" : "", 
                 "expression" : "filter(row.columnNames,cn,isNonBlank(if(row.record.fromRowIndex==row.index,row.record.cells[cn].value.join(\"\"),null)))",
-                "id" : 8
+                "source" : "non-blank-records"
               },
               {
                 "scroll" : false
