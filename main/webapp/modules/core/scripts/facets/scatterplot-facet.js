@@ -96,7 +96,7 @@ class ScatterplotFacet extends Facet {
           '</td>' +
           '<td>' +
             '<a href="javascript:{}" class="facet-choice-link" bind="resetButton">'+$.i18n('core-facets/reset')+'</a>' +
-            '<span bind="titleSpan"></span>' +
+            '<span class="facet-title-span" bind="titleSpan" title="Click here to edit the name of the facet"></span>' +
           '</td>' +
         '</tr></table></div>' +
       '</div>' +

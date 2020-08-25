@@ -134,7 +134,7 @@ class TimeRangeFacet extends Facet{
           '<td>' +
             '<a href="javascript:{}" class="facet-choice-link" bind="resetButton">'+$.i18n('core-facets/reset')+'</a>' +
             '<a href="javascript:{}" class="facet-choice-link" bind="changeButton">'+$.i18n('core-facets/change')+'</a>' +
-            '<span bind="facetTitle"></span>' +
+            '<span class="facet-title-span" bind="titleSpan" title="Click here to edit the name of the facet"></span>' +
           '</td>' +
         '</tr></table></div>' +
       '</div>' +
