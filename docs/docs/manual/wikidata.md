@@ -8,6 +8,8 @@ sidebar_label: Wikidata
 
 OpenRefine provides powerful ways to both pull data from Wikidata and add data to it. 
 
+OpenRefine’s connections to Wikidata were formerly an optional extension, but are now installed automatically with the downloadable package. The Wikidata extension can be removed manually by navigating to your OpenRefine installation folder, and then looking inside `webapp/extensions/` and deleting the `wikidata` folder inside. 
+
 You do not need a Wikidata account to reconcile your local OpenRefine project to Wikidata. If you wish to [upload your cleaned dataset to Wikidata](#editing-wikidata-with-openrefine), you will need an [autoconfirmed](https://www.wikidata.org/wiki/Wikidata:Autoconfirmed_users) account, and you must [authorize OpenRefine with that account](#manage-wikidata-account). 
 
 :::info A better resource

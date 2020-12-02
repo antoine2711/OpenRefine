@@ -74,6 +74,20 @@ The following table shows some example [date and time formatting styles for the 
 |Long	|June 30, 2009 7:03:47 AM PDT 	|30 juin 2009 07:03:47 PDT|
 |Full 	|Tuesday, June 30, 2009 7:03:47 AM PDT 	|mardi 30 juin 2009 07 h 03 PDT|
 
+### Dates
+
+Date-formatted data in OpenRefine relies on a number of conversion tools and standards. When you convert a cell into a "date" data type, what you'll be doing is trying to transform the original contents in an ISO-8601-compliant extended format with time in UTC: YYYY-MM-DDTHH:MM:SSZ.
+
+You can convert dates when you [export your data using the custom tabular exporter](exporting#custom-tabular-exporter). You are given the option to keep your dates in ISO 8601 format, or to output short, medium, long, or full locale formats. This means that you can format your dates into, for example, MM/DD/YY (the US short standard) with or without including the time, after manipulating your data formatted into ISO 8601.  
+
+The following table shows the [date and time formatting styles for the U.S. and French locales](https://docs.oracle.com/javase/tutorial/i18n/format/dateFormat.html):
+|Style 	|U.S. Locale 	|French Locale|
+|DEFAULT 	|Jun 30, 2009 7:03:47 AM 	|30 juin 2009 07:03:47|
+|SHORT 	|6/30/09 7:03 AM 	|30/06/09 07:03|
+|MEDIUM 	|Jun 30, 2009 7:03:47 AM 	|30 juin 2009 07:03:47|
+|LONG 	|June 30, 2009 7:03:47 AM PDT 	|30 juin 2009 07:03:47 PDT|
+|FULL 	|Tuesday, June 30, 2009 7:03:47 AM PDT 	|mardi 30 juin 2009 07 h 03 PDT|
+
 ## Rows vs. records
 
 A row is a simple way to organize data: a series of cells, one cell per column. Sometimes there are multiple pieces of information in one cell, such as when a survey respondent can select more than one response. 
