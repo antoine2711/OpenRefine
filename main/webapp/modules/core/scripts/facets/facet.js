@@ -97,7 +97,7 @@ class Facet {
     var promptText = $.i18n('core-facets/facet-current-title', this._config.name);    
     var newFacetTitle = prompt(promptText, this._config.name);
 
-    if (newFacetTitle == null || newFacetTitle == "") 
+    if (!newFacetTitle)
       newFacetTitle = this._config.nameAtCreation;
     
     this._config.name = newFacetTitle;

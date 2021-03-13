@@ -127,7 +127,7 @@ class TextSearchFacet extends Facet {
     this._elmts.minimizeButton.click(function() { self._minimize(); });
     this._elmts.resetButton.click(function() { self._reset(); });
     this._elmts.invertButton.click(function() { self._invert(); });
-    this._elmts.titleSpan.click(function() { self._editTitle(); });
+    this._elmts.facetTitle.click(function() { self._editTitle(); });
 
     this._elmts.caseSensitiveCheckbox.bind("change", function() {
       self._config.caseSensitive = this.checked;
