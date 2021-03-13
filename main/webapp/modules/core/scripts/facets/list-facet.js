@@ -135,38 +135,41 @@ class ListFacet extends Facet {
   };
 
   _initializeUI() {
+    var self = this;
 
-  this._div.empty().show().html(
-    '<div class="facet-title" bind="facetTitle">' +
-      '<div class="grid-layout layout-tightest layout-full"><table><tr>' +
-        '<td width="1%">' +
-          '<a href="javascript:{}" title="'+$.i18n('core-facets/remove-facet')+'" class="facet-title-remove" bind="removeButton">&nbsp;</a>' +
-        '</td>' +
-        '<td width="1%">' +
-          '<a href="javascript:{}" title="'+$.i18n('core-facets/minimize-facet')+'" class="facet-title-minimize" bind="minimizeButton">&nbsp;</a>' +
-        '</td>' +
-        '<td>' +
-          '<a href="javascript:{}" class="facet-choice-link" bind="resetButton">'+$.i18n('core-facets/reset')+'</a>' +
-          '<a href="javascript:{}" class="facet-choice-link" bind="invertButton">'+$.i18n('core-facets/invert')+'</a>' +
-          '<a href="javascript:{}" class="facet-choice-link" bind="changeButton">'+$.i18n('core-facets/change')+'</a>' +
-          '<span class="facet-title-span" bind="titleSpan" title="'+$.i18n('core-facets/edit-facet-title')+'"></span>' +
-        '</td>' +
-      '</tr></table></div>' +
-    '</div>' +
-    '<div class="facet-expression" bind="expressionDiv" title="'+$.i18n('core-facets/click-to-edit')+'"></div>' +
-    '<div class="facet-controls" bind="controlsDiv" style="display:none;">' +
-      '<a bind="choiceCountContainer" class="action" href="javascript:{}"></a> ' +
-      '<span class="facet-controls-sortControls" bind="sortGroup">'+$.i18n('core-facets/sort-by')+': ' +
-        '<a href="javascript:{}" bind="sortByNameLink">'+$.i18n('core-facets/name')+'</a>' +
-        '<a href="javascript:{}" bind="sortByCountLink">'+$.i18n('core-facets/count')+'</a>' +
-      '</span>' +
-      '<button bind="clusterLink" class="facet-controls-button button">'+$.i18n('core-facets/cluster')+'</button>' +
-    '</div>' +
-    '<div class="facet-body" bind="bodyDiv">' +
-      '<div class="facet-body-inner" bind="bodyInnerDiv"></div>' +
-    '</div>'
-  );
-  this._elmts = DOM.bind(this._div);
+    var facet_id = this._div.attr("id");
+
+    this._div.empty().show().html(
+      '<div class="facet-title" bind="facetTitle">' +
+        '<div class="grid-layout layout-tightest layout-full"><table><tr>' +
+          '<td width="1%">' +
+            '<a href="javascript:{}" title="'+$.i18n('core-facets/remove-facet')+'" class="facet-title-remove" bind="removeButton">&nbsp;</a>' +
+          '</td>' +
+          '<td width="1%">' +
+            '<a href="javascript:{}" title="'+$.i18n('core-facets/minimize-facet')+'" class="facet-title-minimize" bind="minimizeButton">&nbsp;</a>' +
+          '</td>' +
+          '<td>' +
+            '<a href="javascript:{}" class="facet-choice-link" bind="resetButton">'+$.i18n('core-facets/reset')+'</a>' +
+            '<a href="javascript:{}" class="facet-choice-link" bind="invertButton">'+$.i18n('core-facets/invert')+'</a>' +
+            '<a href="javascript:{}" class="facet-choice-link" bind="changeButton">'+$.i18n('core-facets/change')+'</a>' +
+            '<span class="facet-title-span" bind="facetTitle" title="'+$.i18n('core-facets/edit-facet-title')+'"></span>' +
+          '</td>' +
+        '</tr></table></div>' +
+      '</div>' +
+      '<div class="facet-expression" bind="expressionDiv" title="'+$.i18n('core-facets/click-to-edit')+'"></div>' +
+      '<div class="facet-controls" bind="controlsDiv" style="display:none;">' +
+        '<a bind="choiceCountContainer" class="action" href="javascript:{}"></a> ' +
+        '<span class="facet-controls-sortControls" bind="sortGroup">'+$.i18n('core-facets/sort-by')+': ' +
+          '<a href="javascript:{}" bind="sortByNameLink">'+$.i18n('core-facets/name')+'</a>' +
+          '<a href="javascript:{}" bind="sortByCountLink">'+$.i18n('core-facets/count')+'</a>' +
+        '</span>' +
+        '<button bind="clusterLink" class="facet-controls-button button">'+$.i18n('core-facets/cluster')+'</button>' +
+      '</div>' +
+      '<div class="facet-body" bind="bodyDiv">' +
+        '<div class="facet-body-inner" bind="bodyInnerDiv"></div>' +
+      '</div>'
+    );
+    this._elmts = DOM.bind(this._div);
   
   this._elmts.titleSpan.text(this._config.name);
   this._elmts.changeButton.attr("title",$.i18n('core-facets/current-exp')+": " + this._config.expression).click(function() {
@@ -181,7 +184,7 @@ class ListFacet extends Facet {
     this._elmts.removeButton.click(function() { self._remove(); });
     this._elmts.minimizeButton.click(function() { self._minimize(); });
     this._elmts.resetButton.click(function() { self._reset(); });
-    this._elmts.titleSpan.click(function() { self._editTitle(); });
+    this._elmts.facetTitle.click(function() { self._editTitle(); });
     this._elmts.invertButton.click(function() { self._invert(); });
 
     this._elmts.choiceCountContainer.click(function() { self._copyChoices(); });
