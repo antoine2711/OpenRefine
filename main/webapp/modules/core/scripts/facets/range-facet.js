@@ -94,6 +94,8 @@ class RangeFacet extends Facet {
         name: this._config.name,
         expression: this._config.expression,
         columnName: this._config.columnName,
+        source: this._config.source,
+        nameAtCreation: this._config.nameAtCreation,
         selectNumeric: this._selectNumeric,
         selectNonNumeric: this._selectNonNumeric,
         selectBlank: this._selectBlank,
