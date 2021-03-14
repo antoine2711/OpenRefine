@@ -92,6 +92,8 @@ class TimeRangeFacet extends Facet {
         name: this._config.name,
         expression: this._config.expression,
         columnName: this._config.columnName,
+        source: this._config.source,
+        nameAtCreation: this._config.nameAtCreation,
         selectTime: this._selectTime,
         selectNonTime: this._selectNonTime,
         selectBlank: this._selectBlank,

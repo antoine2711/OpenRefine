@@ -66,6 +66,8 @@ class TextSearchFacet extends Facet {
         type: "text",
         name: this._config.name,
         columnName: this._config.columnName,
+        source: this._config.source,
+        nameAtCreation: this._config.nameAtCreation,
         mode: this._config.mode,
         caseSensitive: this._config.caseSensitive,
         invert: this._config.invert,
