@@ -45,7 +45,7 @@ class Facet {
   };
 
   _minimize() {
-   if(!this._minimizeState) {
+    if(!this._minimizeState) {
       this._div.addClass("facet-state-minimize");
     } else {
       this._div.removeClass("facet-state-minimize");
