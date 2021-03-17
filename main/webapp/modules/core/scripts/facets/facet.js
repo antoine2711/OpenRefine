@@ -81,7 +81,7 @@ class Facet {
     this.facetToolTipText = $.i18n('core-facets/edit-facet-title') + newFacetToolTipText;
   }
 
-_editTitle() {
+  _editTitle() {
     var promptText = $.i18n('core-facets/facet-current-title', this._config.name);    
     var newFacetTitle = prompt(promptText, this._config.name);
 
@@ -93,7 +93,7 @@ _editTitle() {
     this._elmts.titleSpan.text(newFacetTitle);
   };  
 
-_remove() {
+  _remove() {
     ui.browsingEngine.removeFacet(this);
 
     this._div = null;
