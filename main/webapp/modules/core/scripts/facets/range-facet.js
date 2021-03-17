@@ -169,7 +169,7 @@ class RangeFacet extends Facet {
       });
     });
 
-    this._elmts.expressionDiv.on('click',function() { 
+    this._elmts.expressionDiv.text(this._config.expression).on('click',function() { 
       self._editExpression(); 
     }).hide();
 
