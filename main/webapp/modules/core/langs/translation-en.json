@@ -316,7 +316,7 @@
     "core-facets/column-tooltip": "Column: $1",
     "core-facets/expr-tooltip": "Expression: $1",
     "core-facets/source-tooltip": "Source: $1",
-    "core-facets/facet-current-title": "The current name of the facet is: $1.\n Enter the new facet's name",
+    "core-facets/facet-current-title": "Rename facet '$1':",
     "core-facets/edit-facet-title": "Click here to edit the name of the facet",
     "core-facets/remove-facet": "Remove this facet",
     "core-facets/minimize-facet": "Toggle between the minimization and maximization of this facet",
