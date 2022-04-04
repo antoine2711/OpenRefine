@@ -183,8 +183,6 @@ Refine.OpenProjectUI.prototype._searchAnimation = function() {
         // In Chrome, Edge and I.E., form.width() != widthFormOpen
             'width': Math.round(form.width()) == widthFormOpen ? '0' : widthFormOpen + "px"
         }, 'fast', function () {
-        console.log(Math.round(form.width()) + " ONE")
-        console.log(form.width() + " ONE")
             if (Math.abs(Math.round(form.width())) == 0) {
             console.log(Math.abs(Math.round(form.width())) + " TWO")
                 form.hide()
@@ -340,6 +338,7 @@ Refine.OpenProjectUI.prototype._renderProjects = function(data) {
       
       var nameLink = $('<a></a>')
       .addClass("project-name")
+      .addClass("searchable")
       .text(project.name)
       .attr("href", "project?project=" + project.id)
       .appendTo($(tr.insertCell(tr.cells.length)));
@@ -349,6 +348,7 @@ Refine.OpenProjectUI.prototype._renderProjects = function(data) {
     tags.map(function(tag){
         $("<span/>")
         .addClass("project-tag")
+        .addClass("searchable")
         .text(tag)
         .appendTo(tagsCell);
         $(tr).addClass(tag);
@@ -357,6 +357,7 @@ Refine.OpenProjectUI.prototype._renderProjects = function(data) {
     
     var appendMetaField = function(data) {
         $('<div></div>')
+        .addClass("searchable")
         .html(data)
         .appendTo($(tr.insertCell(tr.cells.length)));
     };
