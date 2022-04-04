@@ -159,11 +159,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #projectTags {
 	position: relative;
 	padding: 3px 10px;
-	margin: 5px;
+	margin: 0px;
 	font-size: 130%;
-	border-radius: 5px;
-	-moz-border-radius: 5px;
-	-webkit-border-radius: 5px;
+	border-radius: 0px;
+	-moz-border-radius: 0px;
+	-webkit-border-radius: 0px;
 	background: #bcf;
 	min-height: 18px;
 	height: auto;
@@ -171,8 +171,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 }
 
 ul#tagsUl {
-	margin: 0;
-	padding: 0;
+	margin: ;
+    padding: 0;
+    left: 60px;  // add left to make room for magnifying glass icon
+    display: inline-block;
 }
 
 ul#tagsUl li {
@@ -202,6 +204,53 @@ ul#tagsUl li a  {
 	border-radius: 10px;
 	-moz-border-radius: 10px;
 	-webkit-border-radius: 10px;
+}
+/* Search bar in open project */
+// search
+#divSearch{
+    float: left;
+    width: 2.5%;
+    margin-left: -0.5%;
+}
+#divImage{
+    float: left;
+    width: 90%;
+}
+
+#divInput{
+    float: right;
+    width: 10%;
+    display: none;
+}
+
+// input
+ #searchInProjects{
+    border-radius: 10px;
+ }
+
+.header-search-box{
+    display: none;
+    width: 0px;
+    float: left;
+}
+
+// icon search
+.magnifying_glass{
+    width: 40px;
+    height: 27px;
+    border-radius: 10px;
+}
+
+.magnifying-glass-open{
+    background-color: #DEE6FF;
+    width: 100%;
+}
+
+#no-results-message{
+    color: #777;
+    display: none;
+    text-align: center;
+    font-size: x-large;
 }
 
 /* Project List */
