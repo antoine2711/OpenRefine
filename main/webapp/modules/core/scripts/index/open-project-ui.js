@@ -120,7 +120,7 @@ Refine.OpenProjectUI.prototype._buildProjectSearchPanel = function(){
     .appendTo(div);
     // Add div for image in the form
     var divImage = $('<div/>')
-    .attr('id','divImage')
+    .attr('id','search-icon')
     .appendTo(form)
     // Add img to the form
     $('<div/>')
