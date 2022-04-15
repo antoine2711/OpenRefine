@@ -42,7 +42,7 @@ jobs:
           --health-retries 3
 
     steps:
-    - uses: actions/checkout@v2.3.4
+    - uses: actions/checkout@v3.0.1
       with:
         ref: ${{ github.event.pull_request.head.ref }}
         repository: ${{ github.event.pull_request.head.repo.full_name }}
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2.3.4
+    - uses: actions/checkout@v3.0.1
       with:
         ref: ${{ github.event.pull_request.head.ref }}
         repository: ${{ github.event.pull_request.head.repo.full_name }}
