@@ -153,8 +153,8 @@ DataTableColumnHeaderUI.extendMenu(function(column, columnHeaderUI, menu) {
                 {
                   "name": column.name,
                   "columnName": column.name,
-                  "expression": "facetCount(value, 'value', '" + column.name + "') > 1",
-                  "id": 15
+                  "expression": "facetCount(value, 'value', '" +
+                  columnName + "') > 1"
                 }
             );
           }

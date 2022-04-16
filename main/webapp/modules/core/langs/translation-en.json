@@ -634,7 +634,6 @@
     "core-views/edit-rows": "Edit rows",
     "core-views/star-rows": "Star rows",
     "core-views/unstar-rows": "Unstar rows",
-    "core-views/unknown-facet-id": "Facet of unknown ID",
     "core-views/flag-rows": "Flag rows",
     "core-views/unflag-rows": "Unflag rows",
     "core-views/remove-matching": "Remove matching rows",
