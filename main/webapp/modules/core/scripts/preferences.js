@@ -231,14 +231,9 @@ API.Core.GetCsrfToken = function(syncMode) {
   });
 }
 
-<<<<<<< HEAD
 /** @return {Promise<jqDoneArgs>} */
-API.Core.PostCommandCsrf = function(command, queryData, postData) {
-  return new Promise((resolve, reject) => {
-=======
 API.Core.PostCommandCsrf = function(command, queryData, postData, syncMode) {
   if(syncMode === undefined) return new Promise((resolve, reject) => {
->>>>>>> 571a60e3b8d0c0bf9ef8c8828272f90a82c83a25
     API.Core.GetCsrfToken()
       .then( (token) => {
         if (typeof postData == 'string') {
@@ -248,11 +243,7 @@ API.Core.PostCommandCsrf = function(command, queryData, postData, syncMode) {
         }
 
         API.PostCommand(command, queryData, postData)
-<<<<<<< HEAD
-          .then(({data, textStatus, jqXHR}) => { resolve({data, textStatus, jqXHR}); } )
-=======
-          .then( (resultPostData) => { resolve(resultPostData); } )
->>>>>>> 571a60e3b8d0c0bf9ef8c8828272f90a82c83a25
+          .then((resultPostData) => { resolve(resultPostData); } )
           .catch( (err) => { reject(err); } );
       })
       .catch(  (err) => { reject(err); } );
@@ -388,8 +379,8 @@ Tag.Create = function(tag, attributes, parent) {
 
 Tag.tagsName = ["body", "div", "h1", "h2", "h3", "table", "tbody", "th", "tr", "td", "form", "input", "textarea", "button"];
 Tag.tags     = Tag.tagsName.map((tagName) => { Tag.Create( {}, tagName, {} ); }); // { Tag.Create(arguments[0], tagName, arguments[2]); });
-// DEBUG arguments[0] : do koss� ?!
-// Tag.body    = function(attributes, parent) return Tag.New(Tag.Attr(attributes, "body", parent));
+// DEBUG arguments[0] : do kossé ?!
+Tag.body    = function(attributes, parent) return Tag.New(Tag.Attr(attributes, "body", parent));
 
 /*
 Tag.tags.map((object, index) => { Object.defineProperty(object, Tag.tagsName[index], {
@@ -404,8 +395,9 @@ Tag.New = function(attributes) {
   if(this !== undefined)
   if(arguments.length > 1) { attributes.map((newTag) => { Tag.New(newTag); }); return; }
 
-  var tagParent   = parent | attributes.parent | null;
+  var tagParent   = parent || attributes.parent || null;
 
+54e7acddaa9df932b0ec43a7217b97
   if(tagParent) { parent.children.push(newTag); }
 
          newTag   = new Tag;
@@ -413,8 +405,8 @@ Tag.New = function(attributes) {
     newTag.name   = attributes.tag;
   newTag.parent   = tagParent;
   newTag.children = [];
-   newTag.class   = attributes.class  | null;
-      newTag.id   = attributes.id     | null;
+   newTag.class   = attributes.class  || null;
+      newTag.id   = attributes.id     || null;
 
   return newTag;
 }
@@ -424,7 +416,7 @@ Tag.Attr = function(attributes, name, parent) {
     if(name === undefined) { Core.Debug(); }
     attributes.name = name;
   }
-  if(attributes.parent === undefined) { attributes.parent = parent | null };
+  if(attributes.parent === undefined) { attributes.parent = parent || null };
 
   return attributes;
 }
@@ -518,7 +510,7 @@ function populatePreferences() {
     preferenceUIs.push(new PreferenceUI(tr, k, Preferences.values[k]));
   }
 */
-  // Est-ce possible de faire un map sur un JSON�? ;-) Est une Array ?
+// Est-ce possible de faire un map sur un JSON ? ;-) Est une Array ?
   Preferences.values.map((currentPreference) => {
     var newRow = prefTable.tr;
     preferenceUIs.push(new PreferenceUI(newRow, currentPreference, Preferences.values[currentPreference]));
