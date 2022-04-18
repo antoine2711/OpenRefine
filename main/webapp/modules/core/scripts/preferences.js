@@ -99,7 +99,7 @@ var Core        = {};
 Core.Debugging  = true;
 delete Core.Excessive;
 
-Core.Debug      = function() { if(Core.Debugging) debugger; }
+Core.Debug      = function(debugMessage) { if(Core.Debugging) debugger; if(debugMessage) Core.Log(debugMessage); }
 
 Core.Log = function(logMessage) { if(Core.Debugging) { 
   if(arguments.length > 1) { arguments.map((currentValue) => { Core.Log(currentValue); }); return; }
@@ -121,13 +121,18 @@ Core.i18n = function(key, defaultValue) {
 }
 
 Core.alertDialog = function(alertText) {
-  if(Core.Excessive) { Core.Debug(); }
+  if(Core.Excessive) { Core.Debug(alertText); }
   window.alert(alertText);
 }
 
-Core.promptDialog = function(alertText) {
-  if(Core.Excessive) { Core.Debug(); }
-  return window.prompt(alertText);
+Core.promptDialog = function(promptText) {
+  if(Core.Excessive) { Core.Debug(promptText); }
+  return window.prompt(promptText);
+}
+
+Core.confirmDialog = function(confirmText) {
+  if(Core.Excessive) { Core.Debug(confirmText); }
+  return window.confirm(confirmText);
 }
 
 
@@ -374,6 +379,9 @@ Tag.Create = function(tag, attributes, parent) {
   }
 };
 
+Tag.exposedAttributes = ["id", "name", "class", "style", "href", "type", "size", "height", "width", "button"];
+
+
 Tag.tagsName = ["body", "div", "h1", "h2", "h3", "table", "tbody", "th", "tr", "td", "form", "input", "textarea", "button"];
 Tag.tags     = Tag.tagsName.map((tagName) => { Tag.Create( {}, tagName, {} ); }); // { Tag.Create(arguments[0], tagName, arguments[2]); });
 // DEBUG arguments[0] : do kossé ?!
@@ -438,28 +446,54 @@ DOM.body = Tag.id("body-info");
 
 var preferenceUIs = [];
 
-function PreferenceUI(tr, key, initialValue) {
-  var self = this;
 
-  var td0 = tr.insertCell(0);
-  $(td0).text(key);
+// function PreferenceUI(tr, key, initialValue) { // table, tableRow, prefKey, prefInitialValue
+  function PreferenceUI(tr, key, initialValue)
 
-  var td1 = tr.insertCell(1);
-  $(td1).text((initialValue !== null) ? initialValue : "");
+//  var self = this;
+//  var td0 = tr.insertCell(0);
+  var td0 = tr.td;
+  
+//  $(td0).text(key);
+  td0.text(key)
 
-  var td2 = tr.insertCell(2);
+//  var td1 = tr.insertCell(1);
+  var td1 = tr.td;
 
+//  $(td1).text((initialValue !== null) ? initialValue : "");
+  td1.text(initialValue ? initialValue : "");
+  
+//  var td2 = tr.insertCell(2);
+  var td2 = tr.td;
+
+  var editButton = td2.button();
+  editButton.i18n = 'core-index/edit';
+  
+/*
   $('<button class="button">').text(Core.i18n('core-index/edit')).appendTo(td2).click(function() {
-    var newValue = window.prompt(Core.i18n('core-index/change-value')+" " + key, $(td1).text());
-    if (newValue == null) { return; } // @todo old behavior kept, but should be handled.
 
+    var newValue = window.prompt(Core.i18n('core-index/change-value')+" " + key, $(td1).text());
+    if (newValue == null) { return; }
+    
     newValue = (key === "userMetadata") ? Languages.deDupUserMetaData(newValue) : newValue;
 
     Preferences.setValue(key, newValue);
-
     $(td1).text(newValue);
   });
+*/
+  editButton.onClick = function() {
+    var newValue = Core.promptDialog(Core.i18n('core-index/change-value')+" " + key, $(td1).text());
+    
+    newValue = (key === "userMetadata") ? Languages.deDupUserMetaData(newValue) : newValue;
 
+    Preferences.setValue(key, newValue);
+    td1.text(newValue);
+  };
+  
+  var deleteButton = td2.button();
+  deleteButton.i18n = 'core-index/edit';
+
+/*
   $('<button class="button">').text(Core.i18n('core-index/delete')).appendTo(td2).click(function() {
     if (!window.confirm(Core.i18n('core-index/delete-key')+" " + key + "?")) { return }
     Preferences.setValue(key);
@@ -472,9 +506,17 @@ function PreferenceUI(tr, key, initialValue) {
       break;
     }
   });
+*/
+
+  deleteButton.onClick = function() {
+    var newValue = Core.promptDialog(Core.i18n('core-index/change-value')+" " + key, $(td1).text());
+    
+    newValue = (key === "userMetadata") ? Languages.deDupUserMetaData(newValue) : newValue;
+
+    Preferences.setValue(key, newValue);
+    td1.text(newValue);
+  };
 }
-
-
 
 function populatePreferences() {
 //  var body = $("#body-info").empty();
