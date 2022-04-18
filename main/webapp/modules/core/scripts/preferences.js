@@ -101,9 +101,9 @@ delete Core.Excessive;
 
 Core.Debug      = function() { if(Core.Debugging) debugger; }
 
-Core.Log = function(logMessage) { if(Core.Debugging) {
+Core.Log = function(logMessage) { if(Core.Debugging) { 
   if(arguments.length > 1) { arguments.map((currentValue) => { Core.Log(currentValue); }); return; }
-  console.log(logMessage);}
+  console.log(logMessage);} 
 }
 
 Core.i18n = function(key, defaultValue) {
@@ -141,7 +141,7 @@ API.NewError = function(err) {
 }
 
 API.NewPromise = function(apiCommand, promiseDef) {
-  const apiPromise = new Promise(promiseDef);
+  apiPromise = new Promise(promiseDef);
   apiPromise.command = apiCommand;
 
   return apiPromise;
@@ -196,9 +196,9 @@ API.POST = function(url, queryData, postData, syncMode) {
       .fail(  ( jqXHR, textStatus, errorThrown )      => API.fail(reject, jqXHR, textStatus, errorThrown) )
       .error( ( event, jqxhr, settings, thrownError ) => API.error(reject, event, jqxhr, settings, thrownError) )
   });
-
+  
   if(syncMode !== true) { Core.Debug(); }
-
+  
   var ajaxResult = $.ajax({
        async: true,
          url: url,
@@ -231,7 +231,6 @@ API.Core.GetCsrfToken = function(syncMode) {
   });
 }
 
-/** @return {Promise<jqDoneArgs>} */
 API.Core.PostCommandCsrf = function(command, queryData, postData, syncMode) {
   if(syncMode === undefined) return new Promise((resolve, reject) => {
     API.Core.GetCsrfToken()
@@ -243,7 +242,7 @@ API.Core.PostCommandCsrf = function(command, queryData, postData, syncMode) {
         }
 
         API.PostCommand(command, queryData, postData)
-          .then((resultPostData) => { resolve(resultPostData); } )
+          .then( (resultPostData) => { resolve(resultPostData); } )
           .catch( (err) => { reject(err); } );
       })
       .catch(  (err) => { reject(err); } );
@@ -255,7 +254,7 @@ API.Core.GetAllPreferences = function(syncMode) {
 
   if(syncMode === undefined) return new Promise((resolve, reject) => {
     API.Core.PostCommand( "get-all-preferences", {} )
-      .then( ({data}) => { resolve(data); } )
+      .then( (jqXHR) => { resolve(jqXHR.response); } )
       .catch( (err) => { reject(err); } );
   })
 }
@@ -263,7 +262,7 @@ API.Core.GetAllPreferences = function(syncMode) {
 API.Core.SetPreferences = function(key, newValue, syncMode) {
   if(syncMode === undefined) return new Promise((resolve, reject) => {
     API.Core.PostCommandCsrf( "set-preference", $.param({ name: key }), { value: JSON.stringify(newValue) } )
-      .then( ({data}) => { resolve(); } )
+      .then( (jqXHR) => { resolve(); } )
       .catch( (err) => { reject(err); } );
   });
 }
@@ -271,7 +270,7 @@ API.Core.SetPreferences = function(key, newValue, syncMode) {
 API.Core.LoadLanguage = function(lang, syncMode) {
   if(syncMode === undefined) return new Promise((resolve, reject) => {
     API.Core.PostCommand( "load-language", {}, { module : "core", lang } )
-      .then( ({data}) => { resolve(data); } )
+      .then( (data) => { resolve(data); } )
       .catch( (err) => { reject(err); } );
   })
 }
@@ -340,9 +339,7 @@ Languages.Load = function(syncMode) {
       resolve();
     })
     .catch( (err) => {
-      var m = err.message
-      if (err.reqInfo) m += ` (in ${err.reqInfo})`
-      var errorMessage = Core.i18n('core-index/langs-loading-failed', m);
+      var errorMessage = Core.i18n('core-index/langs-loading-failed', err.textStatus +':'+ err.errorThrown);
       Core.alertDialog(errorMessage);
       reject(err);
     });
@@ -371,41 +368,36 @@ Languages.Load();
 /* * * * * * * * * *       TAG       * * * * * * * * * */
 var Tag = {};
 
-Tag.Create = function(tag, attributes, parent) {
-  Tag[tag] = function(attributes, parent) {
-    return Tag.New(Tag.Attr(attributes, tag, parent));
+Tag.Create = function(tag, attributes, parent) { 
+  Tag[tag] = function(attributes, parent) { 
+    return Tag.New(Tag.Attr(attributes, tag, parent)); 
   }
 };
 
 Tag.tagsName = ["body", "div", "h1", "h2", "h3", "table", "tbody", "th", "tr", "td", "form", "input", "textarea", "button"];
 Tag.tags     = Tag.tagsName.map((tagName) => { Tag.Create( {}, tagName, {} ); }); // { Tag.Create(arguments[0], tagName, arguments[2]); });
 // DEBUG arguments[0] : do kossé ?!
-<<<<<<< HEAD
-Tag.body    = function(attributes, parent) return Tag.New(Tag.Attr(attributes, "body", parent));
-=======
 // Tag.body    = function(attributes, parent) return Tag.New(Tag.Attr(attributes, "body", parent));
->>>>>>> 4d0719b1c797c2a1ae9d8a42c482fe3078dde416
 
 /*
-Tag.tags.map((object, index) => { Object.defineProperty(object, Tag.tagsName[index], {
-  get : function (value) { return Tag[object.name]; }
-//  set : Tag[object.name]  // function (value) { Tag(value) }
+Tag.tags.map((object, index) => { Object.defineProperty(object, Tag.tagsName[index], { 
+  get : function (value) { return Tag[object.name]; } 
+//  set : Tag[object.name]  // function (value) { Tag(value) } 
 }); });
 */
 
 Tag.New = function(attributes) {
   if(this !== undefined) Core.Log(this);
-
+  
   if(this !== undefined)
   if(arguments.length > 1) { attributes.map((newTag) => { Tag.New(newTag); }); return; }
-
-  var tagParent   = parent || attributes.parent || null;
-
-54e7acddaa9df932b0ec43a7217b97
+  
+  var tagParent   = parent | attributes.parent || null;
+  
   if(tagParent) { parent.children.push(newTag); }
     /***  BEGIN NO ESLINT  ***/
        var newTag = new Tag;
-
+       
      newTag.isNew = true;
       newTag.name = attributes.tag;
     newTag.parent = tagParent;
@@ -433,7 +425,7 @@ Tag.id = function(idData) {
   tagId     = newTag.attr("id");
   newTag    = Tag.New( Tag.Attr({ id:tagId }) );
   newTag.jq = newTagJq;
-
+  
   return newTag;
 }
 
@@ -501,7 +493,7 @@ function populatePreferences() {
   .html('<tr><th>'+Core.i18n('core-index/key')+'</th><th>'+Core.i18n('core-index/value')+'</th><th></th></tr>')
   .appendTo(body)[0];
 */
-  prefTable = Tag.table({
+  prefTable = Tag.table({ 
     id:    "prefTable",
     class: [ "list-table", "preferences"],
     tr:    { th: { i18n: 'core-index/key' }, th: { i18n: 'core-index/value' }, th: {} }
@@ -514,22 +506,22 @@ function populatePreferences() {
   }
 */
   // Est-ce possible de faire un map sur un JSON ? ;-) Est une Array ?
-  Preferences.values.map((currentPreference) => {
+  Preferences.values.map((currentPreference) => { 
     var newRow = prefTable.tr;
     preferenceUIs.push(new PreferenceUI(newRow, currentPreference, Preferences.values[currentPreference]));
   });
 
 //  var trLast = table.insertRow(table.rows.length);
   var trLast = prefTable.tr;
-
+  
 //  var tdLast0 = trLast.insertCell(0);
   tdLast0 = trLast.td;
 
 //  trLast.insertCell(1); trLast.insertCell(2);
   trLast.td; trLast.td;
-
+  
   addButton = tdLast0.button({ class: "button", i18n: 'core-index/add-pref' });
-
+  
 /*
   $('<button class="button">').text(Core.i18n('core-index/add-pref')).appendTo(tdLast0).click(function() {
     var key = window.prompt(Core.i18n('core-index/add-pref'));
@@ -548,13 +540,13 @@ function populatePreferences() {
   addButton.click = function() {
     let prefKey = Core.promptDialog(Core.i18n('core-index/add-pref'));
     if(!prefKey) return;
-
+    
     let value = Core.promptDialog(Core.i18n('core-index/pref-key'));
     if(!value) return; // @todo Better error management should be done.
-
+    
     let newRow = prefTable.tr;
     preferenceUIs.push(new PreferenceUI(newRow, key, value));
-
+    
     prefValue = (key === "userMetadata") ? Languages.deDupUserMetaData(value) : value;
 
     Preferences.setValue(key, prefValue);
