@@ -23,8 +23,8 @@ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
 A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
 OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
 SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,           
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY           
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
 THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -37,17 +37,39 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 var Core = {};
 Core.Debugging = true;
 
+class jQueryError extends Error {
+  constructor(jqXHR, textStatus, errorThrown) {
+    Object.wtf=jqXHR;
+    super(`jQueryError(url=${jqXHR.url},status=${jqXHR.status} ${jqXHR.statusText},errorThrown=${errorThrown}`);
+    this.jqXHR = jqXHR;
+    this.textStatus = textStatus;
+    this.errorThrown = errorThrown;
+    //this.responseHeaders = jqXHR.getAllResponseHeaders();
+    // this.method = ??; this.url = ??;
+    // jqXHR (and plain XHR) don't support accessing url and method, even though they must be somewhere inside.
+    // therefore, if you want that, you need a rethrowing .catch (or a .finally) that adds fields from the request,
+    // which could be done at the level of API.GET and API.POST so that nothing else needs to do the same. (actually added this as .reqInfo)
+    console.log(`this.message=${this.message}`)
+  }
+}
+
+/* NOTE: jsdoc below uses this typedef: interface jqDoneArgs {data: json; textStatus: string; jqXHR: jqXHR }
+   where the name means that they are jqXHR's done callback's arguments. Note that they are an object (by opposition to
+   having it as a 3-element array as in the `arguments` keyword).
+   Also it is not possible to just do resolve(jqXHR) because it gets magically transformed into its responseJSON field. */
+
 Core.i18n = function(key, defaultValue) {
   if(!key && Core.Debugging) { console.log("Error: Core.i18n() failed. No key."); }
 
   var translatedMessage = $.i18n(key);
-  
+
+  //TODO but what if the translation file says e.g. key "button" translates to "button" in English ? It would count as untranslated below.
   if(translatedMessage == "" || translatedMessage == key) {
     if(Core.Debugging) { console.log("Error: $.i18n() failed. No key: "+ key); }
-    
-    translatedMessage = defaultValue ? defaultValue : key;
+
+    translatedMessage = defaultValue || key;
   }
-  
+
   return translatedMessage;
 }
 
@@ -57,15 +79,15 @@ Core.alertDialog = function(alertText) {
 }
 
 
-/* * * * * * * * * *      TESTS       * * * * * * * * * */
+/* * * * * * * * * *      TESTS       * * * * * * * * * *
 
 //* * *   CORE   * * *
 // Core.alertDialog("Test of a dialog.");
 
 keyTest = "core-index/prefs-loading-failed"; resultTest = Core.i18n(keyTest, "UnhandledValue");
-if(resultTest != "" && resultTest ) 
+if(resultTest != "" && resultTest )
    console.log("Core.i18n translated "+ keyTest +".");
-else 
+else
   console.log("Error when assigning ValAB to variable test-preference");
 
 
@@ -109,95 +131,96 @@ Languages.Load()
   .catch(() => { console.log("Error while loading the language."); });
 
 keyTest = "core-index/prefs-loading-failed"; resultTest = Core.i18n(keyTest, "UnhandledValue");
-if(resultTest != "" && resultTest ) 
+if(resultTest != "" && resultTest )
    console.log("Languages.i18n translated "+ keyTest +".");
-else 
+else
   console.log("Error of Languages.i18n: when assigning ValAB to variable test-preference");
 
 
 /* * * * * * * * * *       API       * * * * * * * * * */
 
-var API = { Core: {} }; 
+var API = { Core: {} };
 
 API.NewError = function(err) {
-  if(Core.Degugging) console.log("An error has occured.");
+  if(Core.Debugging) console.log("An error has occurred.");
   return new Error(err);
 }
 
 API.NewPromise = function(apiCommand, promiseDef) {
-  apiPromise = new Promise(promiseDef);
+  const apiPromise = new Promise(promiseDef);
   apiPromise.command = apiCommand;
-  
+
   return apiPromise;
 }
 
 API.Reject = function(reject, data) {
-  if(Core.Degugging) console.log("An error has occured.");
+  if(Core.Debugging) console.log("An error has occurred.");
   reject(data);
 }
 
-API.fail = function(reject, jqXHR, textStatus, errorThrown) {
-  if(typeof errorThrown != "object") { errorThrown = API.NewError(errorThrown); }
-        
-  errorThrown.jqXHR = jqXHR; 
-  errorThrown.textStatus = textStatus;          
-  API.Reject(reject, errorThrown);
+API.SetFailError = function(method, url, promise, reject) {
+  promise.fail(( jqXHR, textStatus, errorThrown ) => {
+    console.log({ jqXHR, textStatus, errorThrown });
+    if(typeof errorThrown != "object") { errorThrown = API.NewError(errorThrown); }
+    errorThrown.reqInfo = `${method} ${url}`
+    errorThrown.jqXHR = jqXHR;
+    errorThrown.textStatus = textStatus;
+    API.Reject(reject, errorThrown);
+  })
+  promise.error(( jqXHR, textStatus, errorThrown ) => {
+    console.log({ jqXHR, textStatus, errorThrown });
+    const err = new jQueryError(jqXHR,textStatus,errorThrown);
+    err.reqInfo = `${method} ${url}`
+    API.Reject(reject, err);
+  })
 }
 
-API.error = function(reject, event, jqxhr, settings, thrownError) {
-  console.log({ event, jqxhr, settings, thrownError } );
-  API.Reject(reject, thrownError);
-}
-
-API.GET = function(isAsync, url, queryData) { 
-  if(isAsync) return new Promise((resolve, reject) => {
-    $.get(url, queryData, ( response, textStatus, jqXHR ) => { resolve( jqXHR ) }, "json" )
-      .fail(  ( jqXHR, textStatus, errorThrown )      => API.fail(reject, jqXHR, textStatus, errorThrown) )
-      .error( ( event, jqxhr, settings, thrownError ) => API.error(reject, event, jqxhr, settings, thrownError) )
+/** @return {Promise<jqDoneArgs>} */
+API.GET = function(url, queryData) {
+  return new Promise((resolve, reject) => {
+    API.SetFailError("GET", url, $.get(url, queryData, ( data, textStatus, jqXHR ) => {
+      if (Core.Debugging) console.log("API.GET $.get",{data, textStatus, jqXHR })
+      resolve({data,textStatus,jqXHR}) }, "json" ), reject)
   });
-  
-  ajaxResult = $.ajax({
+  /*const ajaxResult = $.ajax({
     async: true,
-	 url: url,
-	 method: "get",
-	 data: queryData,
-	 dataType: "json"
-  });
-  
-  
+    url: url,
+    method: "get",
+    data: queryData,
+    dataType: "json"
+  });*/
 }
 
-API.POST = function(isAsync, url, queryData, postData) {
-  if(isAsync) return new Promise((resolve, reject) => {
+/** @return {Promise<jqDoneArgs>} */
+API.POST = function(url, queryData, postData) {
+  return new Promise((resolve, reject) => {
     var fullUrl = queryData ? url +"?"+ $.param(queryData) : url;
-    
-    $.post(fullUrl, postData, function( response, textStatus, jqXHR ) { resolve( jqXHR ) }, "json" )
-      .fail(  ( jqXHR, textStatus, errorThrown )      => API.fail(reject, jqXHR, textStatus, errorThrown) )
-      .error( ( event, jqxhr, settings, thrownError ) => API.error(reject, event, jqxhr, settings, thrownError) )
+    API.SetFailError("POST", url, $.post(fullUrl, postData, function( data, textStatus, jqXHR ) {
+      if (Core.Debugging) console.log("API.POST $.post",{data, textStatus, jqXHR })
+      resolve({data,textStatus,jqXHR}) }, "json" ), reject)
   });
-  
-  return 
 }
 
-API.Core.GetCommand = function(isAsync, command, queryData) {
+/** @return {Promise<jqDoneArgs>} */
+API.Core.GetCommand = function(command, queryData) {
   return API.GET("command/core/"+ command, queryData);
 }
 
-API.Core.PostCommand = function(isAsync, command, queryData, postData) {
-  if(isAsync) return API.AsyncPOST("command/core/"+ command, queryData, postData);
-  API.SyncPOST("command/core/"+ command, queryData, postData);
+/** @return {Promise<jqDoneArgs>} */
+API.Core.PostCommand = function(command, queryData, postData) {
+  return API.POST("command/core/"+ command, queryData, postData);
 }
 
-API.Core.GetCsrfToken = function(isAsync) {
-  const apiCommand = "get-csrf-token";
-  
-  if(isAsync) return API.NewPromise(apiCommand, (resolve, reject) => {
-    API.Core.GetCommand( , {} )
-      .then( (data) => { resolve( data['token'] ); } )
+/** @return {Promise<string>} */
+API.Core.GetCsrfToken = function() {
+  return API.NewPromise("get-csrf-token", (resolve, reject) => {
+    API.Core.GetCommand("get-csrf-token", {} )
+      .then( ({data}) => { resolve( data['token'] ); } )
       .catch( (err) => { reject(err); } );
   });
 }
 
+/** @return {Promise<jqDoneArgs>} */
 API.Core.PostCommandCsrf = function(command, queryData, postData) {
   return new Promise((resolve, reject) => {
     API.Core.GetCsrfToken()
@@ -209,35 +232,36 @@ API.Core.PostCommandCsrf = function(command, queryData, postData) {
         }
 
         API.PostCommand(command, queryData, postData)
-          .then( (resultPostData) => { resolve(resultPostData); } )
-          .catch( (err) => { reject(err); } ); 
-      }) 
+          .then(({data, textStatus, jqXHR}) => { resolve({data, textStatus, jqXHR}); } )
+          .catch( (err) => { reject(err); } );
+      })
       .catch(  (err) => { reject(err); } );
   });
 }
 
+/** @return {Promise<PlainObject>} */
 API.Core.GetAllPreferences = function() {
-  const apiCommand = "get-csrf-token";
-
   return new Promise((resolve, reject) => {
     API.Core.PostCommand( "get-all-preferences", {} )
-      .then( (jqXHR) => { resolve(jqXHR.response); } )
+      .then( ({data}) => { resolve(data); } )
       .catch( (err) => { reject(err); } );
   })
 }
 
+/** @return {Promise<void>} */
 API.Core.SetPreferences = function(key, newValue) {
   return new Promise((resolve, reject) => {
     API.Core.PostCommandCsrf( "set-preference", $.param({ name: key }), { value: JSON.stringify(newValue) } )
-      .then( (jqXHR) => { resolve(); } )
+      .then( ({data}) => { resolve(); } )
       .catch( (err) => { reject(err); } );
   });
 }
 
+/** @return {Promise<PlainObject>} */
 API.Core.LoadLanguage = function(lang) {
   return new Promise((resolve, reject) => {
     API.Core.PostCommand( "load-language", {}, { module : "core", lang } )
-      .then( (data) => { resolve(data); } )
+      .then( ({data}) => { resolve(data); } )
       .catch( (err) => { reject(err); } );
   })
 }
@@ -247,29 +271,31 @@ API.Core.LoadLanguage = function(lang) {
 
 var Preferences = {};
 
+/** @return {Promise<PlainObject>} */
 Preferences.Load = function() {
   return new Promise((resolve, reject) => {
     API.Core.GetAllPreferences()
-      .then( (data) => { 
-        Preferences.values = data; 
-        resolve(data); 
+      .then( (data) => {
+        Preferences.values = data;
+        resolve(data);
       })
 			.catch( (err) => {
-			  console.log(err);
-				var errorMessage = Core.i18n('core-index/prefs-loading-failed', err.textStatus +':'+ err.errorThrown);
+        console.log(err);
+        var errorMessage = Core.i18n('core-index/prefs-loading-failed', err.toString());
 				Core.alertDialog(errorMessage);
 				reject(err);
 			});
   });
 }
 
-Preferences.getValue = function(key, defaultValue) { 
-  if(!Preferences.values.hasOwnProperty(key)) { return defaultValue; }
+Preferences.getValue = function(key, defaultValue) {
+  if(!Object.prototype.hasOwnProperty.call(Preferences.values,key)) { return defaultValue; }
 
   return Preferences.values[key];
 }
- 
-Preferences.setValue = function(key, newValue) { 
+
+/** @return {Promise<void>} */
+Preferences.setValue = function(key, newValue) {
 	return new Promise((resolve, reject) => {
 		API.Core.SetPreferences(key, newValue)
 			.then( () => { Preferences.values[key] = newValue; resolve(); } )
@@ -286,26 +312,28 @@ Languages.i18n = function(key, defaultValue) {
   if(!key && Core.Debugging) { console.log("Error: Core.i18n() failed. No key."); }
 
   var translatedMessage = $.i18n(key);
-  
+
   if(translatedMessage == "" || translatedMessage == key) {
     if(Core.Debugging) { console.log("Error: $.i18n() failed. No key: "+ key); }
-    
+
     translatedMessage = defaultValue ? defaultValue : key;
   }
-  
+
   return translatedMessage;
 }
 
 Languages.Load = function() {
   return new Promise((resolve, reject) => {
     API.Core.LoadLanguage()
-    .then( (data) => { 
+    .then( (data) => {
 			Languages.dictionary = data['dictionary'];
 			Languages.lang = data['lang'];
 			resolve();
 		})
     .catch( (err) => {
-      var errorMessage = Core.i18n('core-index/langs-loading-failed', err.textStatus +':'+ err.errorThrown);
+      var m = err.message
+      if (err.reqInfo) m += ` (in ${err.reqInfo})`
+      var errorMessage = Core.i18n('core-index/langs-loading-failed', m);
       Core.alertDialog(errorMessage);
       reject(err);
     });
@@ -315,7 +343,7 @@ Languages.Load = function() {
 Languages.setDefaultLanguage = function() {
   Languages.lang = (navigator.language || navigator.userLanguage).split("-")[0];
   // Languages.Load();
-  
+
   $.i18n().load(Languages.dictionary, Languages.lang);
   $.i18n().locale = Languages.lang;
 }
@@ -324,8 +352,8 @@ Languages.deDupUserMetaData = function(arrObj)  {
     var result = _.uniq(JSON.parse(arrObj), function(x){
         return x.name;
     });
-    
-    return JSON.stringify(result).replace(/"/g, '\"');
+
+    return JSON.stringify(result).replace(/"/g, '"');
 }
 
 Languages.setDefaultLanguage();
@@ -349,8 +377,8 @@ function PreferenceUI(tr, key, initialValue) {
   $('<button class="button">').text(Core.i18n('core-index/edit')).appendTo(td2).click(function() {
     var newValue = window.prompt(Core.i18n('core-index/change-value')+" " + key, $(td1).text());
     if (newValue == null) { return; } // @todo old behavior kept, but should be handled.
-    
-	newValue = (key === "userMetadata") ? Languages.deDupUserMetaData(newValue) : newValue;        
+
+	newValue = (key === "userMetadata") ? Languages.deDupUserMetaData(newValue) : newValue;
 
 	Preferences.setValue(key, newValue);
 
@@ -360,11 +388,11 @@ function PreferenceUI(tr, key, initialValue) {
   $('<button class="button">').text(Core.i18n('core-index/delete')).appendTo(td2).click(function() {
     if (!window.confirm(Core.i18n('core-index/delete-key')+" " + key + "?")) { return }
     Preferences.setValue(key);
-      
+
     $(tr).remove();
 	for (var i = 0; i < preferenceUIs.length; i++) {
       if (preferenceUIs[i] !== self) { continue; }
-        
+
       preferenceUIs.splice(i, 1);
       break;
     }
@@ -392,19 +420,19 @@ function populatePreferences() {
   var tdLast0 = trLast.insertCell(0);
   trLast.insertCell(1);
   trLast.insertCell(2);
-    
+
   $('<button class="button">').text(Core.i18n('core-index/add-pref')).appendTo(tdLast0).click(function() {
     var key = window.prompt(Core.i18n('core-index/add-pref'));
     if (!key) { return; }  // @todo old behavior kept, but should be handled.
-    
+
 	var value = window.prompt(Core.i18n('core-index/pref-key'));
 	if (!value === null) { return; }  // @todo old behavior kept, but should be handled.
-		
+
 	var tr = table.insertRow(table.rows.length - 1);
 	preferenceUIs.push(new PreferenceUI(tr, key, value));
-		
-	value = (key === "userMetadata") ? Languages.deDupUserMetaData(value) : value;        
-		
+
+	value = (key === "userMetadata") ? Languages.deDupUserMetaData(value) : value;
+
 	Preferences.setValue(key, value);
   });
 }
