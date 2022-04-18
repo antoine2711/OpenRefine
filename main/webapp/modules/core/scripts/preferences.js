@@ -380,7 +380,11 @@ Tag.Create = function(tag, attributes, parent) {
 Tag.tagsName = ["body", "div", "h1", "h2", "h3", "table", "tbody", "th", "tr", "td", "form", "input", "textarea", "button"];
 Tag.tags     = Tag.tagsName.map((tagName) => { Tag.Create( {}, tagName, {} ); }); // { Tag.Create(arguments[0], tagName, arguments[2]); });
 // DEBUG arguments[0] : do kossé ?!
+<<<<<<< HEAD
 Tag.body    = function(attributes, parent) return Tag.New(Tag.Attr(attributes, "body", parent));
+=======
+// Tag.body    = function(attributes, parent) return Tag.New(Tag.Attr(attributes, "body", parent));
+>>>>>>> 4d0719b1c797c2a1ae9d8a42c482fe3078dde416
 
 /*
 Tag.tags.map((object, index) => { Object.defineProperty(object, Tag.tagsName[index], {
@@ -399,14 +403,16 @@ Tag.New = function(attributes) {
 
 54e7acddaa9df932b0ec43a7217b97
   if(tagParent) { parent.children.push(newTag); }
+    /***  BEGIN NO ESLINT  ***/
+       var newTag = new Tag;
 
-         newTag   = new Tag;
-   newTag.isNew   = true;
-    newTag.name   = attributes.tag;
-  newTag.parent   = tagParent;
+     newTag.isNew = true;
+      newTag.name = attributes.tag;
+    newTag.parent = tagParent;
   newTag.children = [];
-   newTag.class   = attributes.class  || null;
-      newTag.id   = attributes.id     || null;
+     newTag.class = attributes.class  || null;
+        newTag.id = attributes.id     || null;
+    /***  END NO ESLINT  ***/
 
   return newTag;
 }
@@ -422,8 +428,6 @@ Tag.Attr = function(attributes, name, parent) {
 }
 
 
-DOM.body   = Tag.body();
-
 Tag.id = function(idData) {
   newTagJq  = $("#"+ idData);
   tagId     = newTag.attr("id");
@@ -433,8 +437,7 @@ Tag.id = function(idData) {
   return newTag;
 }
 
-
-
+DOM.body   = Tag.body;
 
 
 DOM.body = Tag.id("body-info");
@@ -510,7 +513,7 @@ function populatePreferences() {
     preferenceUIs.push(new PreferenceUI(tr, k, Preferences.values[k]));
   }
 */
-// Est-ce possible de faire un map sur un JSON ? ;-) Est une Array ?
+  // Est-ce possible de faire un map sur un JSON ? ;-) Est une Array ?
   Preferences.values.map((currentPreference) => {
     var newRow = prefTable.tr;
     preferenceUIs.push(new PreferenceUI(newRow, currentPreference, Preferences.values[currentPreference]));
