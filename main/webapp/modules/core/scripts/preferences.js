@@ -503,22 +503,22 @@ function PreferenceUI(tr, key, initialValue) {
   $('<button class="button">').text(Core.i18n('core-index/edit')).appendTo(td2).click(function() {
     var newValue = window.prompt(Core.i18n('core-index/change-value')+" " + key, $(td1).text());
     if (newValue == null) { return; } // @todo old behavior kept, but should be handled.
+    
+	newValue = (key === "userMetadata") ? deDupUserMetaData(newValue) : newValue;        
 
-		newValue = (key === "userMetadata") ? Languages.deDupUserMetaData(newValue) : newValue;
+	Preferences.setValue(key, newValue);
 
-		Preferences.setValue(key, newValue);
-
-		$(td1).text(newValue);
+	$(td1).text(newValue);
   });
 
   $('<button class="button">').text(Core.i18n('core-index/delete')).appendTo(td2).click(function() {
     if (!window.confirm(Core.i18n('core-index/delete-key')+" " + key + "?")) { return }
     Preferences.setValue(key);
-
+      
     $(tr).remove();
-	  for (var i = 0; i < preferenceUIs.length; i++) {
+	for (var i = 0; i < preferenceUIs.length; i++) {
       if (preferenceUIs[i] !== self) { continue; }
-
+        
       preferenceUIs.splice(i, 1);
       break;
     }
@@ -546,30 +546,23 @@ function populatePreferences() {
   var tdLast0 = trLast.insertCell(0);
   trLast.insertCell(1);
   trLast.insertCell(2);
-
+    
   $('<button class="button">').text(Core.i18n('core-index/add-pref')).appendTo(tdLast0).click(function() {
     var key = window.prompt(Core.i18n('core-index/add-pref'));
     if (!key) { return; }  // @todo old behavior kept, but should be handled.
-
+    
 	var value = window.prompt(Core.i18n('core-index/pref-key'));
 	if (!value === null) { return; }  // @todo old behavior kept, but should be handled.
-
+		
 	var tr = table.insertRow(table.rows.length - 1);
 	preferenceUIs.push(new PreferenceUI(tr, key, value));
-
-	value = (key === "userMetadata") ? Languages.deDupUserMetaData(value) : value;
-
+		
+	value = (key === "userMetadata") ? deDupUserMetaData(value) : value;        
+		
 	Preferences.setValue(key, value);
   });
 }
-*/
 
-function onLoad() {
-  Preferences.Load().then(data => {
-    Languages.setDefaultLanguage().then(() => {
-      populatePreferences(data);
-    });
-  });
-}
+function onLoad() { Languages.setDefaultLanguage(true); Preferences.Load().then( (data) => { populatePreferences(); }); }
 
 $(onLoad);
