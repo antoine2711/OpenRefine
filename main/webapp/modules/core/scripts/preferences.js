@@ -31,68 +31,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  */
 
-
-/* * * * * * * * * *      TESTS       * * * * * * * * * *
-
-//* * *   CORE   * * *
-// Core.alertDialog("Test of a dialog.");
-
-// keyTest = "core-index/prefs-loading-failed"; resultTest = Core.i18n(keyTest, "UnhandledValue");
-// if(resultTest != "" && resultTest )
-//    Core.Log("Core.i18n translated "+ keyTest +".");
-// else
-//   Core.Log("Error when assigning ValAB to variable test-preference");
-
-
-//* * *   API   * * *
-API.GET("command/core/load-language")
-  .then((language) => { Core.Log("Language: "+ language); } )
-  .catch((err)     => { Core.Log("Error API.GET() can't read load-language"); });
-
-API.GET("command/core/load-language", {}, true);
-
-API.POST("command/core/load-language", {}, {}, true)
-     .then((data) => { Core.Log(data); } );
-
-API.Core.GetCsrfToken()
-  .then((token) => { Core.Log("Token: "+ token); })
-  .catch((err)  => { Core.Log("Error API.CORE.GetCsrfToken() can't get token"); });
-
-API.Core.GetCommand(true, "load-language")
-  .then((data) => { Core.Log("Data: "+ data); } )
-  .catch((err) => { Core.Log("Error API.CORE.GetCommand() can't read load-language"); });
-
-// API.Core.PostCommand(true, "load-language").then((data) => { Core.Log(data); } );
-
-// API.Core.PostCommandCsrf("load-language").then((data) => { Core.Log(data); } );
-
-API.Core.GetAllPreferences()
-  .then((prefs) => { Core.Log("Preferences: "+ prefs); })
-  .catch((err)  => { Core.Log("Error API.CORE.GetAllPreferences() can't get preferences"); });
-
-API.Core.SetPreferences("test-preference", "ValAB")
-  .then(() => { Core.Log("test-preference a maintenant la valeur ValAB"); } )
-  .catch(() => { Core.Log("Error when assigning ValAB to variable test-preference"); });
-
-
-//* * *   PREFERENCES   * * *
-Preferences.Load()
-  .then(() => { Core.Log("The preferences were loaded."); } )
-  .catch(() => { Core.Log("Error while loading the preferences."); });
-
-
-//* * *   LANGUAGES   * * *
-Languages.Load()
-  .then(() => { Core.Log("The language were loaded."); } )
-  .catch(() => { Core.Log("Error while loading the language."); });
-
-keyTest = "core-index/prefs-loading-failed"; resultTest = Core.i18n(keyTest, "UnhandledValue");
-if(resultTest != "" && resultTest )
-   Core.Log("Languages.i18n translated "+ keyTest +".");
-else
-  Core.Log("Error of Languages.i18n: when assigning ValAB to variable test-preference");
-
-
 /* * * * * * * * * *       CORE       * * * * * * * * * */
 
 var Core        = {};
@@ -402,81 +340,6 @@ Languages.deDupUserMetaData = function(arrObj)  {
 };
 
 
-/* * * * * * * * * *       TAG       * * * * * * * * * */
-var Tag = {};
-
-Tag.Create = function(tagName, attributes, parent) { 
-  Tag[tagName] = function(attributes, parent) { 
-    return Tag.New(Tag.Attr(attributes, tagName, parent)); 
-  }
-};
-
-Tag.CreateAttribues = function(tag, attributes, parent) { 
-  Tag[tag] = function(attributes, parent) { 
-    return Tag.NewAttr(Tag.Attr(attributes, tag, parent)); 
-  }
-};
-
-Tag.exposedAttributes = ["id", "name", "class", "style", "href", "type", "size", "height", "width", "button"];
-Tag.tags     = Tag.exposedAttributes.map((attrsName) => { Tag.CreateAttribues( {}, attrsName, {} ); });
-
-Tag.tagsName = ["body", "div", "h1", "h2", "h3", "table", "tbody", "th", "tr", "td", "form", "input", "textarea", "button"];
-Tag.tags     = Tag.tagsName.map((tagName) => { Tag.Create( {}, tagName, {} ); }); // { Tag.Create(arguments[0], tagName, arguments[2]); });
-// DEBUG arguments[0] : do kossé ?!
-// Tag.body    = function(attributes, parent) return Tag.New(Tag.Attr(attributes, "body", parent));
-
-if(Core.Debugging) Core.Debug("Error");
-
-/*
-Tag.tags.map((object, index) => { Object.defineProperty(object, Tag.tagsName[index], {
-  get : function (value) { return Tag[object.name]; }
-//  set : Tag[object.name]  // function (value) { Tag(value) }
-}); });
-*/
-
-Tag.New = function(attributes) {
-  if(this !== undefined) Core.Log(this);
-
-  if(this !== undefined)
-    if(arguments.length > 1) { attributes.map((newTag) => { Tag.New(newTag); }); return; }
-
-  var tagParent   = parent || attributes.parent || null;
-
-  if(tagParent) { parent.children.push(newTag); }
-    /* BEGIN NO REFORMAT */
-     const newTag = new Tag;
-
-     newTag.isNew = true;
-      newTag.name = attributes.tag;
-    newTag.parent = tagParent;
-  newTag.children = [];
-     newTag.class = attributes.class  || null;
-        newTag.id = attributes.id     || null;
-    /* END NO REFORMAT */
-
-  return newTag;
-};
-
-Tag.Attr = function(attributes, name, parent) {
-  if(attributes.name === undefined) {
-    if(name === undefined) { Core.Debug(); }
-    attributes.name = name;
-  }
-  if(attributes.parent === undefined) { attributes.parent = parent || null }
-
-  return attributes;
-};
-
-
-Tag.id = function(idData) {
-  const newTagJq  = $("#"+ idData);
-  const tagId     = newTag.attr("id");
-  const newTag    = Tag.New( Tag.Attr({ id:tagId }) );
-  newTag.jq = newTagJq;
-
-  return newTag;
-};
-
 /* * * * * * * * * *       PAGE       * * * * * * * * * */
 
 var Page   = { name: "preferences" };
@@ -488,6 +351,18 @@ DOM.body   = Tag.id("body-info");
 /* * * * * * * * * *       UI       * * * * * * * * * */
 
 var preferenceUIs = [];
+
+var Refine = {
+};
+
+Refine.wrapCSRF = function(onCSRF) {
+   Core.API.GetCsrfToken().then( () => onCSRF );
+};
+
+Refine.postCSRF = function(url, data, success, dataType, failCallback) {
+  Core.PostCommandCsrf( url.substr(13), {}, data).then(success).fail(failCallback);
+};
+
 
 function PreferenceUI(tr, key, initialValue) {
   var self = this;
