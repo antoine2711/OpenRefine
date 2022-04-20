@@ -35,14 +35,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 var Core        = {};
 Core.debugging  = true;
-Core.Excessive  = true;
-// delete Core.Excessive;
+//Core.Excessive  = true;
+delete Core.Excessive;
 
 Core.debug      = function(debugMessage) { if(Core.debugging) if(debugMessage) { Core.log(debugMessage); debugger; } }
 
 Core.log = function(logMessage) { if(Core.debugging) {
   if(arguments.length > 1) { arguments.map((currentValue) => { Core.log(currentValue); }); return; }
   console.log(logMessage);}
+};
+
+Core.newError = function(err) {
+  if(Core.debugging) Core.log("An error has occurred.");
+  return new Error(err);
+};
+
+Core.raiseError = function(err) {
+  if(Core.debugging) Core.log("An error has occurred.");
+  throw Core.newError(err);
 };
 
 Core.i18n = function(key, defaultValue) {
@@ -105,16 +115,6 @@ function errMessageWithReq(err) {
 
 var API = { f: "json", Core: {} };
 
-API.newError = function(err) {
-  if(Core.debugging) Core.log("An error has occurred.");
-  return new Error(err);
-};
-
-API.raiseError = function(err) {
-  if(Core.debugging) Core.log("An error has occurred.");
-  throw API.NewError(err);
-};
-
 API.newPromise = function(apiCommand, promiseDef) {
   const apiPromise = new Promise(promiseDef);
   apiPromise.command = apiCommand;
@@ -130,7 +130,7 @@ API.reject = function(reject, data) {
 API.setFailError = function(method, url, promise, reject) {
   promise.fail(( jqXHR, textStatus, errorThrown ) => {
     console.log({ jqXHR, textStatus, errorThrown });
-    if(typeof errorThrown != "object") { errorThrown = API.newError(errorThrown); }
+    if(typeof errorThrown != "object") { errorThrown = Core.newError(errorThrown); }
     errorThrown.reqInfo = `${method} ${url}`
     errorThrown.jqXHR = jqXHR;
     errorThrown.textStatus = textStatus;
@@ -413,56 +413,58 @@ Languages.deDupUserMetaData = function(arrObj)  {
 
 
 /* * * * * * * * * *       TAG       * * * * * * * * * */
-var Tag = {};
+var Tag         = { name: "Tag", isNew: false };
+Tag.names       = [ "body", "div", "h1", "h2", "h3", "table", "tbody", "th", "tr", "td", "form", "input", "textarea", "button"];
+var                  body={},div={},h1={},h2={},h3={},table={},tbody={},th={},tr={},td={},form={},input={},textarea={},button={};
+Tag.list        = [  body,   div,   h1,   h2,   h3,   table,   tbody,   th,   tr,   td,   form,   input,   textarea,   button ];
 
-Tag.protoConstructor = function(tagName) { 
-  Tag[tagName] = function(attributes, parent) { 
-    return Tag.new(Tag.attr(attributes, tagName, parent)); 
-  }
-};
-
-Tag.protoAttributes = function(tagName) { 
-  Tag[tagName] = function(attributes, parent) { 
-    return Tag.newAttr(Tag.attr(attributes, tagName, parent)); 
-  }
-};
-
-Tag.exposedAttributes = ["id", "name", "class", "style", "href", "type", "size", "height", "width", "button"];
-Tag.tags     = Tag.exposedAttributes.map((attrsName) => { Tag.protoAttributes( {}, attrsName, {} ); });
-
-Tag.tagsName = ["body", "div", "h1", "h2", "h3", "table", "tbody", "th", "tr", "td", "form", "input", "textarea", "button"];
-Tag.tags     = Tag.tagsName.map((tagName) => { Tag.protoConstructor( {}, tagName, {} ); }); // { Tag.Create(arguments[0], tagName, arguments[2]); });
-// DEBUG arguments[0] : do kossé ?!
-// Tag.body    = function(attributes, parent) { return Tag.new(Tag.attr(attributes, "body", parent)) };
-
-if(Core.isDebugging) Core.debug("Error");
-
-/*
-Tag.tags.map((object, index) => { Object.defineProperty(object, Tag.tagsName[index], { 
-  get : function (value) { return Tag[object.name]; } 
-//  set : Tag[object.name]  // function (value) { Tag(value) } 
-}); });
-*/
+var Attribute   = { name: "Attribute", value: undefined };
+Attribute.names = ["id", "name", "class", "style", "href", "type", "size", "height", "width", "button"];
 
 Tag.new = function(attributes) {
   if(attributes == undefined) Core.raiseError();
-  if(this != undefined) Core.log(this);
+//  if(this != undefined) Core.log("this != undefined in Tag.new() : ", this);
   
-  if(arguments.length > 1) { attributes.map((newTag) => { Tag.new(newTag); }); return; }
+  if(arguments.length > 1) { const newTags = attributes.map((newTag) => { return Tag.new({ tagName: newTag }); }); return newTags; }
+  if(Array.isArray(attributes)) { const newTags = attributes.map((newTag) => { return Tag.new(newTag); }); return newTags; }
   
   var tagParent   = parent | attributes.parent || null;
   
   if(tagParent) { parent.children.push(newTag); }
-     const newTag = new Tag;
+  const    newTag = { ...Tag };
 
      newTag.isNew = true;
+   newTag.tagName = attributes.name;
       newTag.name = attributes.name;
     newTag.parent = tagParent;
   newTag.children = [];
-     newTag.class = attributes.class  || null;
-        newTag.id = attributes.id     || null;
+  
+  if(attributes.class) newTag.class = attributes.class;
+  if(attributes.id)    newTag.id    = attributes.id;
 
   return newTag;
+};
+
+Attribute.new = function(tag, attributeName) {
+  if(tag           ==  undefined) Core.raiseError();
+  if(tag.isNew || tag.isNew !== false) Core.raiseError();
+  if(attributeName ==  undefined) Core.raiseError();
+  
+  if(Array.isArray(attributeName)) { 
+    if(arguments.length > 1) Core.raiseError();
+    const newAttrs = attributeName.map((newAttrName) => { return Attribute.new(tag, newAttrName); }); 
+    return newAttrs; 
+  }
+  
+  const newAttr = { ...Attribute };
+  
+     newAttr.isNew = true; tag
+  newAttr.attrName = attributeName;
+      newAttr.name = attributeName;
+       newAttr.tag = tag;
+     newAttr.value = null;
+
+  return newAttr;
 };
 
 Tag.attrMergeValidate = function(attributes, name, parent) {
@@ -475,6 +477,17 @@ Tag.attrMergeValidate = function(attributes, name, parent) {
   return attributes;
 };
 
+Tag.attributes = Attribute.names.map( (attributeName) => { return Tag[attributeName] = Attribute.new(Tag, attributeName) } );
+Tag.attributes.map((attribute) => { Object.defineProperty(attribute, attribute.name, { 
+  get : function () { return attribute.value; },
+  set : function (value) { attribute.value = value; } 
+}); });
+
+Tag.tags       = Tag.names.map( (tagName) => { return Tag[tagName] = Tag.new({ name: tagName }) } );
+Tag.list.map((varTag) => { return varTag = Object.assign(varTag, Tag[varTag.name]); });
+// Tag.body      = function(attributes, parent) { return Tag.new(Tag.attr(attributes, "body", parent)) };
+
+/*
 Tag.id = function(idData) {
   const newTagJq  = $("#"+ idData);
   const tagId     = newTag.attr("id");
@@ -483,6 +496,7 @@ Tag.id = function(idData) {
   
   return newTag;
 };
+*/
 
 /* * * * * * * * * *       PAGE       * * * * * * * * * */
 
