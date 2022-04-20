@@ -415,16 +415,15 @@ Languages.deDupUserMetaData = function(arrObj)  {
 /* * * * * * * * * *       TAG       * * * * * * * * * */
 var Tag = {};
 
-/*
-Tag.protoConstructor = function(tagName, attributes, parent) { 
+Tag.protoConstructor = function(tagName) { 
   Tag[tagName] = function(attributes, parent) { 
     return Tag.new(Tag.attr(attributes, tagName, parent)); 
   }
 };
 
-Tag.protoAttributes = function(tag, attributes, parent) { 
-  Tag[tag] = function(attributes, parent) { 
-    return Tag.newAttr(Tag.Attr(attributes, tag, parent)); 
+Tag.protoAttributes = function(tagName) { 
+  Tag[tagName] = function(attributes, parent) { 
+    return Tag.newAttr(Tag.attr(attributes, tagName, parent)); 
   }
 };
 
