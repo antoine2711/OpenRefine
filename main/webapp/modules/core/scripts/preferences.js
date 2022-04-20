@@ -34,23 +34,24 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* * * * * * * * * *       CORE       * * * * * * * * * */
 
 var Core        = {};
-Core.Debugging  = true;
-delete Core.Excessive;
+Core.debugging  = true;
+Core.Excessive  = true;
+// delete Core.Excessive;
 
-Core.Debug      = function(debugMessage) { if(Core.Debugging) debugger; if(debugMessage) Core.Log(debugMessage); }
+Core.debug      = function(debugMessage) { if(Core.debugging) if(debugMessage) { Core.log(debugMessage); debugger; } }
 
-Core.Log = function(logMessage) { if(Core.Debugging) {
-  if(arguments.length > 1) { arguments.map((currentValue) => { Core.Log(currentValue); }); return; }
+Core.log = function(logMessage) { if(Core.debugging) {
+  if(arguments.length > 1) { arguments.map((currentValue) => { Core.log(currentValue); }); return; }
   console.log(logMessage);}
 };
 
 Core.i18n = function(key, defaultValue) {
-  if(!key && Core.Debugging) { Core.Log("Error: Core.i18n() failed. No key."); }
+  if(!key && Core.debugging) { Core.log("Error: Core.i18n() failed. No key."); }
 
   var translatedMessage = $.i18n(key);
 
   if(translatedMessage == "" || translatedMessage == key) {
-    if(Core.Debugging) { Core.Log("Error: $.i18n() failed. No key: "+ key); }
+    if(Core.debugging) { Core.log("Error: $.i18n() failed. No key: "+ key); }
 
     translatedMessage = defaultValue ? defaultValue : key;
   }
@@ -59,17 +60,17 @@ Core.i18n = function(key, defaultValue) {
 };
 
 Core.alertDialog = function(alertText) {
-  if(Core.Excessive) { Core.Debug(alertText); }
+  if(Core.Excessive) { Core.debug(alertText); }
   window.alert(alertText);
 };
 
 Core.promptDialog = function(promptText) {
-  if(Core.Excessive) { Core.Debug(promptText); }
+  if(Core.Excessive) { Core.debug(promptText); }
   return window.prompt(promptText);
 }
 
 Core.confirmDialog = function(confirmText) {
-  if(Core.Excessive) { Core.Debug(confirmText); }
+  if(Core.Excessive) { Core.debug(confirmText); }
   return window.confirm(confirmText);
 }
 
@@ -88,6 +89,7 @@ class jQueryError extends Error {
     console.log(`this.message=${this.message}`)
   }
 }
+
 function errMessageWithReq(err) {
   let m = err.message
   if (err.reqInfo) m += ` (in ${err.reqInfo})`
@@ -103,149 +105,190 @@ function errMessageWithReq(err) {
 
 var API = { f: "json", Core: {} };
 
-API.NewError = function(err) {
-  if(Core.Debugging) Core.Log("An error has occurred.");
+API.newError = function(err) {
+  if(Core.debugging) Core.log("An error has occurred.");
   return new Error(err);
 };
 
-API.NewPromise = function(apiCommand, promiseDef) {
+API.raiseError = function(err) {
+  if(Core.debugging) Core.log("An error has occurred.");
+  throw API.NewError(err);
+};
+
+API.newPromise = function(apiCommand, promiseDef) {
   const apiPromise = new Promise(promiseDef);
   apiPromise.command = apiCommand;
 
   return apiPromise;
 };
 
-API.Reject = function(reject, data) {
-  if(Core.Debugging) Core.Log("An error has occurred.");
+API.reject = function(reject, data) {
+  if(Core.debugging) Core.log("An error has occurred.");
   reject(data);
 };
 
-API.SetFailError = function(method, url, promise, reject) {
+API.setFailError = function(method, url, promise, reject) {
   promise.fail(( jqXHR, textStatus, errorThrown ) => {
     console.log({ jqXHR, textStatus, errorThrown });
-    if(typeof errorThrown != "object") { errorThrown = API.NewError(errorThrown); }
+    if(typeof errorThrown != "object") { errorThrown = API.newError(errorThrown); }
     errorThrown.reqInfo = `${method} ${url}`
     errorThrown.jqXHR = jqXHR;
     errorThrown.textStatus = textStatus;
-    API.Reject(reject, errorThrown);
+    API.reject(reject, errorThrown);
   })
   promise.error(( jqXHR, textStatus, errorThrown ) => {
     console.log({ jqXHR, textStatus, errorThrown });
     const err = new jQueryError(jqXHR,textStatus,errorThrown);
     err.reqInfo = `${method} ${url}`
-    API.Reject(reject, err);
+    API.reject(reject, err);
   })
 };
 
 /** @return {syncMode===undefined ? Promise<jqDoneArgs> : void} */
+/** @return {syncMode===true      ? String : void} */
 API.GET = function(url, queryData, syncMode) {
-  if(syncMode === undefined) return new Promise((resolve, reject) => {
-    API.SetFailError("GET",url, $.get(url, queryData, ( response, textStatus, jqXHR ) => { resolve({response, textStatus, jqXHR}) }, API.f ), reject)
+  if(syncMode === undefined) return API.newPromise("GET, url: "+ url, (resolve, reject) => {
+    API.setFailError("GET",url, $.get(url, queryData, ( response, textStatus, jqXHR ) => { resolve({response, textStatus, jqXHR}) }, API.f ), reject)
   });
 
-  if(syncMode !== true) { Core.Debug(); }
+  if(syncMode !== true) { Core.debug(); }
 
   var ajaxResult = $.ajax({
-       async: true,
+       async: false,
          url: url,
       method: "get",
         data: queryData,
     dataType: API.f
   });
 
-  Core.Log(ajaxResult);
-
-  return;
-};
-
-
-API.POST = function(url, queryData, postData, syncMode) {
-  if(syncMode === undefined) return new Promise((resolve, reject) => {
-    var fullUrl = queryData ? url +"?"+ $.param(queryData) : url;
-    API.SetFailError("POST",url,$.post(fullUrl, postData, function( data, textStatus, jqXHR ) { resolve({ data, textStatus, jqXHR }) }, API.f ), reject)
-  });
-
-  if(syncMode !== true) { Core.Debug(); }
-
-  var ajaxResult = $.ajax({
-       async: true,
-         url: url,
-      method: "post",
-        data: postData,
-    dataType: API.f
-  });
-
-  Core.Log(ajaxResult.responseJSON);
+  // Core.log(ajaxResult.responseJSON);
 
   return ajaxResult.responseJSON;
 };
 
 /** @return {syncMode===undefined ? Promise<jqDoneArgs> : void} */
-API.Core.GetCommand = function(command, queryData, syncMode) {
-  if(syncMode === undefined) return API.GET("command/core/"+ command, queryData);
+/** @return {syncMode===true      ? String : void} */
+API.POST = function(url, queryData, postData, syncMode) {
+  var fullUrl = queryData ? url +"?"+ $.param(queryData) : url;
+
+  if(syncMode === undefined) return API.newPromise("POST, url: "+ url, (resolve, reject) => {
+    API.setFailError("POST", url, $.post(fullUrl, postData, function( data, textStatus, jqXHR ) { 
+      resolve({ data, textStatus, jqXHR }) 
+    }, API.f ), reject);
+  });
+
+  if(syncMode !== true) { Core.debug(); }
+
+  var ajaxResult = $.ajax({
+       async: false,
+         url: fullUrl,
+      method: "post",
+        data: postData,
+    dataType: API.f
+  });
+
+  // Core.log(ajaxResult.responseJSON);
+
+  return ajaxResult.responseJSON;
 };
 
 /** @return {syncMode===undefined ? Promise<jqDoneArgs> : void} */
-API.Core.PostCommand = function(command, queryData, postData, syncMode) {
-  if(syncMode === undefined) return API.POST("command/core/"+ command, queryData, postData);
-  API.SyncPOST("command/core/"+ command, queryData, postData);
+/** @return {syncMode===true      ? String : void} */
+API.Core.getCommand = function(command, queryData, syncMode) {
+  return API.GET("command/core/"+ command, queryData, syncMode);
+};
+
+/** @return {syncMode===undefined ? Promise<jqDoneArgs> : void} */
+/** @return {syncMode===true      ? String : void} */
+API.Core.postCommand = function(command, queryData, postData, syncMode) {
+  return API.POST("command/core/"+ command, queryData, postData, syncMode);
 };
 
 /** @return {syncMode===undefined ? Promise<string> : void} */
-API.Core.GetCsrfToken = function(syncMode) {
-  const apiCommand = "get-csrf-token";
-
-  if(syncMode === undefined) return API.NewPromise(apiCommand, (resolve, reject) => {
-    API.Core.GetCommand(apiCommand, {} )
+/** @return {syncMode===true      ? String : void} */
+API.Core.getCsrfToken = function(syncMode) {
+  const apiCommand    = "get-csrf-token";
+  
+  if(syncMode === undefined) return API.newPromise(apiCommand, (resolve, reject) => {
+    API.Core.getCommand(apiCommand)
       .then( ({data}) => { resolve( data['token'] ); } )
-      .catch( (err) => { reject(err); } );
+      .catch( (err)   => { reject(err); } );
   });
+  
+  if(syncMode !== true) { Core.debug(); }
+
+  return API.Core.getCommand(apiCommand, {}, true);
 };
 
 /** @return {syncMode===undefined ? Promise<jqDoneArgs> : void} */
-API.Core.PostCommandCsrf = function(command, queryData, postData, syncMode) {
-  if(syncMode === undefined) return new Promise((resolve, reject) => {
-    API.Core.GetCsrfToken()
+/** @return {syncMode===true      ? String : void} */
+API.Core.postCommandCsrf = function(command, queryData, postData, syncMode) {
+  if(syncMode === undefined) return API.newPromise(command, (resolve, reject) => {
+    API.Core.getCsrfToken()
       .then( (token) => {
         if (typeof postData == 'string') {
-          postData += "&" + $.param({csrf_token: token});
+          postData += "&"+ $.param({csrf_token: token});
         } else {
           postData['csrf_token'] = token;
         }
 
-        API.PostCommand(command, queryData, postData)
+        API.postCommand(command, queryData, postData)
           .then(({data, textStatus, jqXHR}) => { resolve({data, textStatus, jqXHR}); } )
           .catch( (err) => { reject(err); } );
-      })
-      .catch(  (err) => { reject(err); } );
+      }).catch( (err) => { reject(err); } );
   });
-};
 
-/** @return {syncMode===undefined ? Promise<PlainObject> : void} */
-API.Core.GetAllPreferences = function(syncMode) {
-  if(syncMode === undefined) return new Promise((resolve, reject) => {
-    API.Core.PostCommand( "get-all-preferences", {} )
-      .then( ({data}) => { resolve(data); } )
-      .catch( (err) => { reject(err); } );
-  });
-};
-
-/** @return {syncMode===undefined ? Promise<void> : void} */
-API.Core.SetPreferences = function(key, newValue, syncMode) {
-  if(syncMode === undefined) return new Promise((resolve, reject) => {
-    API.Core.PostCommandCsrf( "set-preference", $.param({ name: key }), { value: JSON.stringify(newValue) } )
-      .then( ({data}) => { resolve(); } )
-      .catch( (err) => { reject(err); } );
-  });
+  if(syncMode !== true) { Core.debug(); }
+  
+  var token = API.Core.getCsrfToken(true);  
+  if(typeof postData == 'string') 
+    { postData += "&"+ token } else { postData['csrf_token'] = token; }
+  
+  API.postCommand(command, queryData, postData, true);
 };
 
 /** @return {syncMode===undefined ? Promise<void> : void} */
-API.Core.LoadLanguage = function(lang, syncMode) {
-  if(syncMode === undefined) return new Promise((resolve, reject) => {
-    API.Core.PostCommand( "load-language", {}, { module : "core", lang } )
+/** @return {syncMode===true      ? String        : void} */
+API.Core.getAllPreferences = function(syncMode) {
+  const apiCommand    = "get-all-preferences";
+  
+  if(syncMode === undefined) return API.newPromise(apiCommand, (resolve, reject) => {
+    API.Core.postCommand( apiCommand )
       .then( ({data}) => { resolve(data); } )
       .catch( (err) => { reject(err); } );
   });
+
+  if(syncMode !== true) { Core.debug(); }
+  return API.Core.postCommand( apiCommand, true )
+};
+
+/** @return {syncMode===undefined ? Promise<void> : void} */
+/** @return {syncMode===true      ? String        : void} */
+API.Core.setPreferences = function(key, newValue, syncMode) {
+  const apiCommand = "set-preference";
+  
+  if(syncMode === undefined) 
+    return API.Core.postCommandCsrf( apiCommand, $.param({ name: key }), { value: JSON.stringify(newValue) } );
+
+  if(syncMode !== true) { Core.debug(); }
+  
+  return API.Core.postCommandCsrf( apiCommand, $.param({ name: key }), { value: JSON.stringify(newValue) }, true );
+};
+
+/** @return {syncMode===undefined ? Promise<void> : void} */
+/** @return {syncMode===true      ? String        : void} */
+API.Core.loadLanguage = function(lang, syncMode) {
+  const apiCommand    = "load-language";
+  
+  if(syncMode === undefined) return API.newPromise(apiCommand, (resolve, reject) => {
+    API.Core.postCommand( apiCommand, {}, { module : "core", lang } )
+      .then( ({data}) => { resolve(data); } )
+      .catch( (err) => { reject(err); } );
+  });
+
+  if(syncMode !== true) { Core.debug(); }
+  
+  return API.Core.postCommand( apiCommand, {}, { module : "core", lang }, true );
 };
 
 
@@ -254,49 +297,62 @@ API.Core.LoadLanguage = function(lang, syncMode) {
 var Preferences = {};
 
 /** @return {syncMode===undefined ? Promise<void> : void} */
-Preferences.Load = function(syncMode) {
-  return new Promise((resolve, reject) => {
-    API.Core.GetAllPreferences()
-      .then( (data) => {
-        Preferences.values = data;
-        resolve(data);
-      })
+/** @return {syncMode===true      ? String        : void} */
+Preferences.load = function(syncMode) {
+  if(syncMode === undefined) { return API.Core.getAllPreferences()
+      .then( (data) => { Preferences.values = data; })
       .catch( (err) => {
-        Core.Log(err);
+        Core.debug(err);
         var errorMessage = Core.i18n('core-index/prefs-loading-failed', errMessageWithReq(err));
         Core.alertDialog(errorMessage);
-        reject(err);
       });
-  });
+  }
+  
+  if(syncMode !== true) { Core.debug(); }
+  
+  return API.Core.getAllPreferences(true);
 };
 
-Preferences.getValue = function(key, defaultValue, syncMode) {
-  if(!Object.prototype.hasOwnProperty.call(Preferences.values,key)) { return defaultValue; }
-
-  return Preferences.values[key];
+/** @return {syncMode===undefined ? Promise<void> : void} */
+/** @return {syncMode===true      ? String        : void} */
+Preferences.getValue = function(key, defaultValue, freshRead, syncMode) {
+  if(freshRead === undefined) {
+    if(!Object.hasOwnProperty.call(Preferences.values,key)) 
+      { return defaultValue; } else { return Preferences.values[key]; }
+  }
+  
+  // @todo handle syncMode & freshRead
+  if(!Object.hasOwnProperty.call(Preferences.values,key)) 
+    { return defaultValue; } else { return Preferences.values[key]; }
 };
 
+/** @return {syncMode===undefined ? Promise<void> : void} */
+/** @return {syncMode===true      ? String        : void} */
 Preferences.setValue = function(key, newValue, syncMode) {
-  return new Promise((resolve, reject) => {
-    API.Core.SetPreferences(key, newValue, syncMode)
+  if(syncMode === undefined) return new Promise((resolve, reject) => {
+    API.Core.setPreferences(key, newValue)
       .then( () => { Preferences.values[key] = newValue; resolve(); } )
       .catch( (err) => { Core.alertDialog("Can save value."); reject(err); } );
   });
+  
+  if(syncMode !== true) { Core.debug(); }
+  
+  return API.Core.setPreferences(key, newValue, true);
 };
 
 
 /* * * * * * * * * *   LANGUAGES   * * * * * * * * * */
 
 var Languages = {};
-Languages.UserNavigatorPref = function() { return (navigator.language || navigator.userLanguage).split("-")[0] }
+Languages.userNavigatorPref = function() { return (navigator.language || navigator.userLanguage).split("-")[0] }
 
-Languages.i18n = function(key, defaultValue, syncMode) {
-  if(!key && Core.Debugging) { Core.Log("Error: Languages.i18n() failed. No key."); }
+Languages.i18n = function(key, defaultValue) {
+  if(!key && Core.debugging) { Core.log("Error: Languages.i18n() failed. No key."); }
 
   var translatedMessage = $.i18n(key);
 
   if(translatedMessage == "" || translatedMessage == key) {
-    if(Core.Debugging) { Core.Log("Error: Languages.i18n() failed. No translation for key: "+ key); }
+    if(Core.debugging) { Core.log("Error: Languages.i18n() failed. No translation for key: "+ key); }
 
     translatedMessage = defaultValue ? defaultValue : key;
   }
@@ -304,31 +360,48 @@ Languages.i18n = function(key, defaultValue, syncMode) {
   return translatedMessage;
 };
 
-Languages.Load = function(syncMode) {
-  return new Promise((resolve, reject) => {
-    API.Core.LoadLanguage(syncMode)
+/** @return {syncMode===undefined ? Promise<void> : void} */
+/** @return {syncMode===true      ? String        : void} */
+Languages.load = function(syncMode) {
+  if(syncMode === undefined) { return API.Core.loadLanguage()
     .then( (data) => {
       Languages.dictionary = data['dictionary'];
       Languages.lang = data['lang'];
-      resolve();
     })
     .catch( (err) => {
       var errorMessage = Core.i18n('core-index/langs-loading-failed', errMessageWithReq(err));
       Core.alertDialog(errorMessage);
-      reject(err);
     });
-  });
+  }
+  
+  if(syncMode !== true) { Core.debug(); }
+  
+  const langData = API.Core.loadLanguage(true);
+  
+  $.i18n().load(Languages.dictionary, Languages.lang);
+  $.i18n().locale = Languages.lang;
+  
+  return langData;
 };
 
-Languages.setDefaultLanguage = function() {
-  return new Promise((resolve, reject) => {
-    Languages.lang = Languages.UserNavigatorPref();
-    Languages.Load().then(() => {
-      $.i18n().load(Languages.dictionary, Languages.lang);
-      $.i18n().locale = Languages.lang;
-      resolve()
-    }).catch(reject)
-  })
+/** @return {syncMode===undefined ? Promise<void> : void} */
+/** @return {syncMode===true      ? String        : void} */
+Languages.setDefaultLanguage = function(syncMode) {
+  Languages.lang = Languages.userNavigatorPref();
+  
+  if(syncMode === undefined) { return Languages.load().then( () => {
+    $.i18n().load(Languages.dictionary, Languages.lang);
+    $.i18n().locale = Languages.lang;
+  })}
+  
+  if(syncMode !== true) { Core.debug(); }
+  
+  const langData = Languages.load(true);
+  
+  $.i18n().load(Languages.dictionary, Languages.lang);
+  $.i18n().locale = Languages.lang;
+  
+  return langData;
 };
 
 Languages.deDupUserMetaData = function(arrObj)  {
@@ -340,12 +413,85 @@ Languages.deDupUserMetaData = function(arrObj)  {
 };
 
 
+/* * * * * * * * * *       TAG       * * * * * * * * * */
+var Tag = {};
+
+/*
+Tag.protoConstructor = function(tagName, attributes, parent) { 
+  Tag[tagName] = function(attributes, parent) { 
+    return Tag.new(Tag.attr(attributes, tagName, parent)); 
+  }
+};
+
+Tag.protoAttributes = function(tag, attributes, parent) { 
+  Tag[tag] = function(attributes, parent) { 
+    return Tag.newAttr(Tag.Attr(attributes, tag, parent)); 
+  }
+};
+
+Tag.exposedAttributes = ["id", "name", "class", "style", "href", "type", "size", "height", "width", "button"];
+Tag.tags     = Tag.exposedAttributes.map((attrsName) => { Tag.protoAttributes( {}, attrsName, {} ); });
+
+Tag.tagsName = ["body", "div", "h1", "h2", "h3", "table", "tbody", "th", "tr", "td", "form", "input", "textarea", "button"];
+Tag.tags     = Tag.tagsName.map((tagName) => { Tag.protoConstructor( {}, tagName, {} ); }); // { Tag.Create(arguments[0], tagName, arguments[2]); });
+// DEBUG arguments[0] : do kossé ?!
+// Tag.body    = function(attributes, parent) { return Tag.new(Tag.attr(attributes, "body", parent)) };
+
+if(Core.isDebugging) Core.debug("Error");
+
+/*
+Tag.tags.map((object, index) => { Object.defineProperty(object, Tag.tagsName[index], { 
+  get : function (value) { return Tag[object.name]; } 
+//  set : Tag[object.name]  // function (value) { Tag(value) } 
+}); });
+*/
+
+Tag.new = function(attributes) {
+  if(attributes == undefined) Core.raiseError();
+  if(this != undefined) Core.log(this);
+  
+  if(arguments.length > 1) { attributes.map((newTag) => { Tag.new(newTag); }); return; }
+  
+  var tagParent   = parent | attributes.parent || null;
+  
+  if(tagParent) { parent.children.push(newTag); }
+     const newTag = new Tag;
+
+     newTag.isNew = true;
+      newTag.name = attributes.name;
+    newTag.parent = tagParent;
+  newTag.children = [];
+     newTag.class = attributes.class  || null;
+        newTag.id = attributes.id     || null;
+
+  return newTag;
+};
+
+Tag.attrMergeValidate = function(attributes, name, parent) {
+  if(attributes.name === undefined) {
+    if(name === undefined) { Core.debug(); }
+    attributes.name = name;
+  }
+  if(attributes.parent === undefined) { attributes.parent = parent || null }
+
+  return attributes;
+};
+
+Tag.id = function(idData) {
+  const newTagJq  = $("#"+ idData);
+  const tagId     = newTag.attr("id");
+  const newTag    = Tag.new( Tag.attr({ id:tagId }) );
+        newTag.jq = newTagJq;
+  
+  return newTag;
+};
+
 /* * * * * * * * * *       PAGE       * * * * * * * * * */
 
-var Page   = { name: "preferences" };
+var Page   = { name: "preferences" }
 
-DOM.body   = Tag.body;
-DOM.body   = Tag.id("body-info");
+//DOM.body   = Tag.body;
+//DOM.body   = Tag.id("body-info");
 
 
 /* * * * * * * * * *       UI       * * * * * * * * * */
@@ -355,12 +501,9 @@ var preferenceUIs = [];
 var Refine = {
 };
 
-Refine.wrapCSRF = function(onCSRF) {
-   Core.API.GetCsrfToken().then( () => onCSRF );
-};
-
+Refine.wrapCSRF = function(onCSRF) { Core.API.GetCsrfToken().then( onCSRF ); };
 Refine.postCSRF = function(url, data, success, dataType, failCallback) {
-  Core.PostCommandCsrf( url.substr(13), {}, data).then(success).fail(failCallback);
+  Core.POST( url, data).then(success).fail(failCallback);
 };
 
 
@@ -377,23 +520,23 @@ function PreferenceUI(tr, key, initialValue) {
 
   $('<button class="button">').text(Core.i18n('core-index/edit')).appendTo(td2).click(function() {
     var newValue = window.prompt(Core.i18n('core-index/change-value')+" " + key, $(td1).text());
-    if (newValue == null) { return; } // @todo old behavior kept, but should be handled.
-    
-	newValue = (key === "userMetadata") ? deDupUserMetaData(newValue) : newValue;        
+    if (newValue == null) { return; } 
 
-	Preferences.setValue(key, newValue);
+    newValue = (key === "userMetadata") ? Languages.deDupUserMetaData(newValue) : newValue;        
 
-	$(td1).text(newValue);
+    Preferences.setValue(key, newValue);
+
+    $(td1).text(newValue);
   });
 
   $('<button class="button">').text(Core.i18n('core-index/delete')).appendTo(td2).click(function() {
     if (!window.confirm(Core.i18n('core-index/delete-key')+" " + key + "?")) { return }
     Preferences.setValue(key);
-      
+
     $(tr).remove();
-	for (var i = 0; i < preferenceUIs.length; i++) {
+    for (var i = 0; i < preferenceUIs.length; i++) {
       if (preferenceUIs[i] !== self) { continue; }
-        
+
       preferenceUIs.splice(i, 1);
       break;
     }
@@ -426,18 +569,18 @@ function populatePreferences() {
     var key = window.prompt(Core.i18n('core-index/add-pref'));
     if (!key) { return; }  // @todo old behavior kept, but should be handled.
     
-	var value = window.prompt(Core.i18n('core-index/pref-key'));
-	if (!value === null) { return; }  // @todo old behavior kept, but should be handled.
-		
-	var tr = table.insertRow(table.rows.length - 1);
-	preferenceUIs.push(new PreferenceUI(tr, key, value));
-		
-	value = (key === "userMetadata") ? deDupUserMetaData(value) : value;        
-		
-	Preferences.setValue(key, value);
+  var value = window.prompt(Core.i18n('core-index/pref-key'));
+  if (!value === null) { return; }  // @todo old behavior kept, but should be handled.
+    
+  var tr = table.insertRow(table.rows.length - 1);
+  preferenceUIs.push(new PreferenceUI(tr, key, value));
+
+  value = (key === "userMetadata") ? Languages.deDupUserMetaData(value) : value;        
+    
+  Preferences.setValue(key, value);
   });
 }
 
-function onLoad() { Languages.setDefaultLanguage(true); Preferences.Load().then( (data) => { populatePreferences(); }); }
+function onLoad() { Languages.setDefaultLanguage(true); Preferences.load().then( populatePreferences ) }
 
 $(onLoad);
