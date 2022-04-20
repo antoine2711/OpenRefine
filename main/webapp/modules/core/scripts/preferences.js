@@ -362,11 +362,11 @@ Languages.i18n = function(key, defaultValue) {
 
 /** @return {syncMode===undefined ? Promise<void> : void} */
 /** @return {syncMode===true      ? String        : void} */
-Languages.load = function(syncMode) {
-  if(syncMode === undefined) { return API.Core.loadLanguage()
-    .then( (data) => {
-      Languages.dictionary = data['dictionary'];
-      Languages.lang = data['lang'];
+Languages.load = function(lang, syncMode) {
+  if(syncMode === undefined) { return API.Core.loadLanguage(lang)
+    .then( (langData) => {
+      Languages.dictionary = langData['dictionary'];
+      Languages.lang       = langData['lang'];
     })
     .catch( (err) => {
       var errorMessage = Core.i18n('core-index/langs-loading-failed', errMessageWithReq(err));
@@ -376,10 +376,10 @@ Languages.load = function(syncMode) {
   
   if(syncMode !== true) { Core.debug(); }
   
-  const langData = API.Core.loadLanguage(true);
+  const langData = API.Core.loadLanguage(lang, true);
   
-  $.i18n().load(Languages.dictionary, Languages.lang);
-  $.i18n().locale = Languages.lang;
+  Languages.dictionary = langData['dictionary'];
+  Languages.lang       = langData['lang'];
   
   return langData;
 };
@@ -396,12 +396,11 @@ Languages.setDefaultLanguage = function(syncMode) {
   
   if(syncMode !== true) { Core.debug(); }
   
-  const langData = Languages.load(true);
-  
+  Languages.load(Languages.lang, true);
   $.i18n().load(Languages.dictionary, Languages.lang);
   $.i18n().locale = Languages.lang;
   
-  return langData;
+  return;
 };
 
 Languages.deDupUserMetaData = function(arrObj)  {
