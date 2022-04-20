@@ -373,19 +373,27 @@ Languages.Load();
 /* * * * * * * * * *       TAG       * * * * * * * * * */
 var Tag = {};
 
-Tag.Create = function(tag, attributes, parent) { 
+Tag.Create = function(tagName, attributes, parent) { 
+  Tag[tagName] = function(attributes, parent) { 
+    return Tag.New(Tag.Attr(attributes, tagName, parent)); 
+  }
+};
+
+Tag.CreateAttribues = function(tag, attributes, parent) { 
   Tag[tag] = function(attributes, parent) { 
-    return Tag.New(Tag.Attr(attributes, tag, parent)); 
+    return Tag.NewAttr(Tag.Attr(attributes, tag, parent)); 
   }
 };
 
 Tag.exposedAttributes = ["id", "name", "class", "style", "href", "type", "size", "height", "width", "button"];
-
+Tag.tags     = Tag.exposedAttributes.map((attrsName) => { Tag.CreateAttribues( {}, attrsName, {} ); });
 
 Tag.tagsName = ["body", "div", "h1", "h2", "h3", "table", "tbody", "th", "tr", "td", "form", "input", "textarea", "button"];
 Tag.tags     = Tag.tagsName.map((tagName) => { Tag.Create( {}, tagName, {} ); }); // { Tag.Create(arguments[0], tagName, arguments[2]); });
 // DEBUG arguments[0] : do kossé ?!
 // Tag.body    = function(attributes, parent) return Tag.New(Tag.Attr(attributes, "body", parent));
+
+if(Core.Debugging) Core.Debug("Error");
 
 /*
 Tag.tags.map((object, index) => { Object.defineProperty(object, Tag.tagsName[index], { 
@@ -437,18 +445,19 @@ Tag.id = function(idData) {
   return newTag;
 }
 
+/* * * * * * * * * *       PAGE       * * * * * * * * * */
+
+var Page   = { name: "preferences" };
+
 DOM.body   = Tag.body;
-
-
-DOM.body = Tag.id("body-info");
+DOM.body   = Tag.id("body-info");
 
 /* * * * * * * * * *       UI       * * * * * * * * * */
 
 var preferenceUIs = [];
 
-
 // function PreferenceUI(tr, key, initialValue) { // table, tableRow, prefKey, prefInitialValue
-  function PreferenceUI(tr, key, initialValue)
+  function PreferenceUI(tr, key, initialValue) {
 
 //  var self = this;
 //  var td0 = tr.insertCell(0);
@@ -518,6 +527,7 @@ var preferenceUIs = [];
   };
 }
 
+/*
 function populatePreferences() {
 //  var body = $("#body-info").empty();
   var bodyInfo = Tag.id("body-info");
@@ -534,7 +544,7 @@ function populatePreferences() {
   .addClass("preferences")
   .html('<tr><th>'+Core.i18n('core-index/key')+'</th><th>'+Core.i18n('core-index/value')+'</th><th></th></tr>')
   .appendTo(body)[0];
-*/
+* /
   prefTable = Tag.table({ 
     id:    "prefTable",
     class: [ "list-table", "preferences"],
@@ -546,7 +556,7 @@ function populatePreferences() {
     var tr = table.insertRow(table.rows.length);
     preferenceUIs.push(new PreferenceUI(tr, k, Preferences.values[k]));
   }
-*/
+* /
   // Est-ce possible de faire un map sur un JSON ? ;-) Est une Array ?
   Preferences.values.map((currentPreference) => { 
     var newRow = prefTable.tr;
@@ -578,7 +588,7 @@ function populatePreferences() {
     value = (key === "userMetadata") ? Languages.deDupUserMetaData(value) : value;
 
     Preferences.setValue(key, value);
-*/
+* /
   addButton.click = function() {
     let prefKey = Core.promptDialog(Core.i18n('core-index/add-pref'));
     if(!prefKey) return;
@@ -594,6 +604,7 @@ function populatePreferences() {
     Preferences.setValue(key, prefValue);
   };
 }
+*/
 
 function onLoad() { Preferences.Load().then( (data) => { populatePreferences(data); }); }
 
