@@ -414,12 +414,15 @@ Languages.deDupUserMetaData = function(arrObj)  {
 
 /* * * * * * * * * *       TAG       * * * * * * * * * */
 var Tag         = { name: "Tag", isNew: false };
-Tag.names       = [ "body", "div", "h1", "h2", "h3", "table", "tbody", "th", "tr", "td", "form", "input", "textarea", "button"];
+Tag.names       = [ "body", "div", "h1", "h2", "h3", "table", "tbody", "th", "tr", "td", "form", "input", "textarea", "button" ];
+
+/*
 var                  body={},div={},h1={},h2={},h3={},table={},tbody={},th={},tr={},td={},form={},input={},textarea={},button={};
-Tag.list        = [  body,   div,   h1,   h2,   h3,   table,   tbody,   th,   tr,   td,   form,   input,   textarea,   button ];
+Tag.list        = {  body,   div,   h1,   h2,   h3,   table,   tbody,   th,   tr,   td,   form,   input,   textarea,   button  };
+*/
 
 var Attribute   = { name: "Attribute", value: undefined };
-Attribute.names = ["id", "name", "class", "style", "href", "type", "size", "height", "width", "button"];
+Attribute.names = ["id", "name", "class", "style", "href", "type", "size", "height", "width", "i18n"];
 
 Tag.new = function(attributes) {
   if(attributes == undefined) Core.raiseError();
@@ -430,8 +433,9 @@ Tag.new = function(attributes) {
   
   var tagParent   = parent | attributes.parent || null;
   
+  const    newTag = Object.assign({}, globalThis[attributes.name]);
+
   if(tagParent) { parent.children.push(newTag); }
-  const    newTag = { ...Tag };
 
      newTag.isNew = true;
    newTag.tagName = attributes.name;
@@ -446,19 +450,19 @@ Tag.new = function(attributes) {
 };
 
 Attribute.new = function(tag, attributeName) {
-  if(tag           ==  undefined) Core.raiseError();
+  if(tag           ==  undefined)      Core.raiseError();
   if(tag.isNew || tag.isNew !== false) Core.raiseError();
-  if(attributeName ==  undefined) Core.raiseError();
+  if(attributeName ==  undefined)      Core.raiseError();
   
   if(Array.isArray(attributeName)) { 
-    if(arguments.length > 1) Core.raiseError();
+    if(arguments.length > 1)           Core.raiseError();
     const newAttrs = attributeName.map((newAttrName) => { return Attribute.new(tag, newAttrName); }); 
-    return newAttrs; 
+    return newAttrs;
   }
   
-  const newAttr = { ...Attribute };
+  const    newAttr = Object.assign({}, Attribute);
   
-     newAttr.isNew = true; tag
+     newAttr.isNew = true;
   newAttr.attrName = attributeName;
       newAttr.name = attributeName;
        newAttr.tag = tag;
@@ -477,26 +481,64 @@ Tag.attrMergeValidate = function(attributes, name, parent) {
   return attributes;
 };
 
+Tag.setAttributes = function(attributes, tagName, parent) {
+  Attribute.names.map( (attrName) => { if(attributes[attrName]) { this.attrName = attributes[attrName]; } });
+  if(typeof name == "string") { this.name = tagName }
+  // @todo valider parent
+  if(this.parent) { Core.raiseError("Tag.setAttributes(): this.parent != undefined"); }
+  if(parent) this.parent = parent;
+};
+
+Tag.exchangeChild = function(newTag) {
+  const positionOfChild = this.children.indexOf(newTag);
+  if(positionOfChild == -1) Core.raiseError("Tag.exchangeChild() : this.children.indexOf(newTag) == -1");
+  
+  const oldTag = this.children[positionOfChild];
+  this.children[positionOfChild] = newTag;
+  newTag.parent = this;
+  
+  if(Core.Excessive) { Core.debugMessage(oldTag); }
+}
+
+Tag.exchangeMeFromParent = function(newTag) {
+  const parent = this.parent;
+  if(!this.parent) { Core.raiseError("Tag.exchangeMeFromParent() : !this.parent"); }
+  
+  const oldTag = parent.exchangeChild(newTag);
+  
+  if(Core.Excessive) { Core.debugMessage(oldTag); }
+}
+
 Tag.attributes = Attribute.names.map( (attributeName) => { return Tag[attributeName] = Attribute.new(Tag, attributeName) } );
 Tag.attributes.map((attribute) => { Object.defineProperty(attribute, attribute.name, { 
   get : function () { return attribute.value; },
   set : function (value) { attribute.value = value; } 
 }); });
 
+globalThis
+
 Tag.tags       = Tag.names.map( (tagName) => { return Tag[tagName] = Tag.new({ name: tagName }) } );
-Tag.list.map((varTag) => { return varTag = Object.assign(varTag, Tag[varTag.name]); });
+Tag.tags.map((varTag) => { 
+  globalThis.push(varTag);
+  Object.defineProperty(Tag, varTag.name, { 
+    get : function () { const newTag = Tag.new({ parent: varTag }); return newTag; }
+//    set : function (value) { attribute.value = value; } 
+}); });
+
+
+// Tag.list.map((varTag) => { return varTag = Object.assign(varTag, Tag[varTag.name]); });
 // Tag.body      = function(attributes, parent) { return Tag.new(Tag.attr(attributes, "body", parent)) };
 
-/*
-Tag.id = function(idData) {
+
+Tag.FindById = function(idData) {
   const newTagJq  = $("#"+ idData);
-  const tagId     = newTag.attr("id");
-  const newTag    = Tag.new( Tag.attr({ id:tagId }) );
+  const tagId     = newTagJq.attr("id");
+  const newTag    = Tag.new({ id:tagId });
         newTag.jq = newTagJq;
   
   return newTag;
 };
-*/
+
 
 /* * * * * * * * * *       PAGE       * * * * * * * * * */
 
@@ -510,37 +552,58 @@ var Page   = { name: "preferences" }
 
 var preferenceUIs = [];
 
-var Refine = {
-};
-
+var Refine = {};
 Refine.wrapCSRF = function(onCSRF) { Core.API.GetCsrfToken().then( onCSRF ); };
-Refine.postCSRF = function(url, data, success, dataType, failCallback) {
-  Core.POST( url, data).then(success).fail(failCallback);
-};
+Refine.postCSRF = function(url, data, resolve, dataType, fail) { Core.POST(url, data).then(resolve).fail(fail); };
 
 
+// function PreferenceUI(tr, key, initialValue) { // table, tableRow, prefKey, prefInitialValue
 function PreferenceUI(tr, key, initialValue) {
-  var self = this;
 
-  var td0 = tr.insertCell(0);
-  $(td0).text(key);
+//  var self = this;
+//  var td0 = tr.insertCell(0);
+  var td0 = tr.td;
 
-  var td1 = tr.insertCell(1);
-  $(td1).text((initialValue !== null) ? initialValue : "");
+//  $(td0).text(key);
+  td0.text(key)
 
-  var td2 = tr.insertCell(2);
+//  var td1 = tr.insertCell(1);
+  var td1 = tr.td;
 
+//  $(td1).text((initialValue !== null) ? initialValue : "");
+  td1.text(initialValue ? initialValue : "");
+
+//  var td2 = tr.insertCell(2);
+  var td2 = tr.td;
+
+  var editButton = td2.button();
+  editButton.i18n = 'core-index/edit';
+
+/*
   $('<button class="button">').text(Core.i18n('core-index/edit')).appendTo(td2).click(function() {
-    var newValue = window.prompt(Core.i18n('core-index/change-value')+" " + key, $(td1).text());
-    if (newValue == null) { return; } 
 
-    newValue = (key === "userMetadata") ? Languages.deDupUserMetaData(newValue) : newValue;        
+    var newValue = window.prompt(Core.i18n('core-index/change-value')+" " + key, $(td1).text());
+    if (newValue == null) { return; }
+
+    newValue = (key === "userMetadata") ? Languages.deDupUserMetaData(newValue) : newValue;
 
     Preferences.setValue(key, newValue);
-
     $(td1).text(newValue);
   });
+*/
+  editButton.onClick = function() {
+    var newValue = Core.promptDialog(Core.i18n('core-index/change-value')+" " + key, $(td1).text());
 
+    newValue = (key === "userMetadata") ? Languages.deDupUserMetaData(newValue) : newValue;
+
+    Preferences.setValue(key, newValue);
+    td1.text(newValue);
+  };
+
+  var deleteButton = td2.button();
+  deleteButton.i18n = 'core-index/edit';
+
+/*
   $('<button class="button">').text(Core.i18n('core-index/delete')).appendTo(td2).click(function() {
     if (!window.confirm(Core.i18n('core-index/delete-key')+" " + key + "?")) { return }
     Preferences.setValue(key);
@@ -553,44 +616,95 @@ function PreferenceUI(tr, key, initialValue) {
       break;
     }
   });
+*/
+
+  deleteButton.onClick = function() {
+    var newValue = Core.promptDialog(Core.i18n('core-index/change-value')+" " + key, $(td1).text());
+
+    newValue = (key === "userMetadata") ? Languages.deDupUserMetaData(newValue) : newValue;
+
+    Preferences.setValue(key, newValue);
+    td1.text(newValue);
+  };
 }
 
 function populatePreferences() {
-  var body = $("#body-info").empty();
+//  var body = $("#body-info").empty();
+  var bodyInfo = Tag.FindById("body-info");
+  //DOM.body.div = [ Tag.div({id:"header"}), bodyInfo, Tag.div({ id:"meetric-wrapper" }) ];
 
-  $("#or-proj-starting").text(Core.i18n('core-project/starting')+"...");
-  $('<h1>').text(Core.i18n('core-index/preferences')).appendTo(body);
+//  $("#or-proj-starting").text(Core.i18n('core-project/starting')+"...");
 
+//  $('<h1>').text(Core.i18n('core-index/preferences')).appendTo(body);
+  bodyInfo.h1 = Tag.h1.i18n = 'core-index/preferences';
+
+/*
   var table = $('<table>')
   .addClass("list-table")
   .addClass("preferences")
   .html('<tr><th>'+Core.i18n('core-index/key')+'</th><th>'+Core.i18n('core-index/value')+'</th><th></th></tr>')
   .appendTo(body)[0];
+*/
 
+  const prefTable = Tag.table.setAttributes({
+    id:    "prefTable",
+    class: [ "list-table", "preferences"],
+    tr:    { th1: { name:"th", i18n: 'core-index/key' }, th2: { name:"th", i18n: 'core-index/value' }, th3: { name:"th" } }
+  });
+
+/*
   for (var k in Preferences.values) {
     var tr = table.insertRow(table.rows.length);
     preferenceUIs.push(new PreferenceUI(tr, k, Preferences.values[k]));
   }
+*/
+  // Est-ce possible de faire un map sur un JSON ? ;-) Est une Array ?
+  Preferences.values.map((currentPreference) => {
+    var newRow = prefTable.tr;
+    preferenceUIs.push(new PreferenceUI(newRow, currentPreference, Preferences.values[currentPreference]));
+  });
 
-  var trLast = table.insertRow(table.rows.length);
-  var tdLast0 = trLast.insertCell(0);
-  trLast.insertCell(1);
-  trLast.insertCell(2);
-    
+//  var trLast = table.insertRow(table.rows.length);
+  var trLast = prefTable.tr;
+
+//  var tdLast0 = trLast.insertCell(0);
+  const tdLast0 = trLast.td;
+
+//  trLast.insertCell(1); trLast.insertCell(2);
+  trLast.td; trLast.td;
+
+/*
   $('<button class="button">').text(Core.i18n('core-index/add-pref')).appendTo(tdLast0).click(function() {
     var key = window.prompt(Core.i18n('core-index/add-pref'));
     if (!key) { return; }  // @todo old behavior kept, but should be handled.
-    
-  var value = window.prompt(Core.i18n('core-index/pref-key'));
-  if (!value === null) { return; }  // @todo old behavior kept, but should be handled.
-    
-  var tr = table.insertRow(table.rows.length - 1);
-  preferenceUIs.push(new PreferenceUI(tr, key, value));
 
-  value = (key === "userMetadata") ? Languages.deDupUserMetaData(value) : value;        
-    
-  Preferences.setValue(key, value);
+    var value = window.prompt(Core.i18n('core-index/pref-key'));
+    if (value === null) { return; }  // @todo old behavior kept, but should be handled.
+
+    var tr = table.insertRow(table.rows.length - 1);
+    preferenceUIs.push(new PreferenceUI(tr, key, value));
+
+    value = (key === "userMetadata") ? Languages.deDupUserMetaData(value) : value;
+
+    Preferences.setValue(key, value);
   });
+*/
+
+  const addButton = tdLast0.button({ class: "button", i18n: 'core-index/add-pref' });
+  addButton.click = function() {
+    let prefKey = Core.promptDialog(Core.i18n('core-index/add-pref'));
+    if(!prefKey) return;
+
+    let prefValue = Core.promptDialog(Core.i18n('core-index/pref-key'));
+    if(!prefValue) return;
+
+    let newRow = prefTable.tr;
+    preferenceUIs.push(new PreferenceUI(newRow, prefKey, prefValue));
+
+    prefValue = (prefKey === "userMetadata") ? Languages.deDupUserMetaData(prefValue) : prefValue;
+
+    Preferences.setValue(prefKey, prefValue);
+  };
 }
 
 function onLoad() { Languages.setDefaultLanguage(true); Preferences.load().then( populatePreferences ) }
