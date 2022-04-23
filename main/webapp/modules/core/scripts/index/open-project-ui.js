@@ -170,11 +170,11 @@ Refine.OpenProjectUI.prototype._searchAnimation = function() {
     search.click(function () {
         if (form.is(':hidden'))
         {
-            $("#tagsUl").hide()
-            $("#divInput").show()
-            icon.addClass("magnifying-glass-open")
-            form.show()
-            form.focus()
+            $("#tagsUl").hide();
+            $("#divInput").show();
+            icon.addClass("magnifying-glass-open");
+            form.show();
+            form.focus();
         }
         var widthFormOpen = Math.floor($('#right-panel-body').width() * 4 / 5);
 
@@ -221,8 +221,7 @@ Refine.OpenProjectUI.prototype._searchInput = function() {
 
     //user is "finished typing," do something
     function doneTyping () {
-        var text = ''
-        text = search.val();
+        var text = search.val();
         // get the text, get back the projects that contains the text in the metadata
         $("#tableBody").filterListSearch(text);
     }
