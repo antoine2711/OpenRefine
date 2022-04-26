@@ -372,7 +372,7 @@
                  * current handler
                  */
                 if ($.imgAreaSelect.onKeyPress != docKeyPress)
-                    $(document).off($.imgAreaSelect.keyPress,
+                    $(document).unbind($.imgAreaSelect.keyPress,
                         $.imgAreaSelect.onKeyPress);
 
                 if (options.keys)
@@ -486,8 +486,8 @@
             if (options.autoHide || selection.width * selection.height == 0)
                 hide($box.add($outer), function () { $(this).hide(); });
 
-            $(document).off('mousemove', selectingMouseMove);
-            $box.on('mousemove',areaMouseMove);
+            $(document).unbind('mousemove', selectingMouseMove);
+            $box.mousemove(areaMouseMove);
 
             options.onSelectEnd(img, getSelection());
         }
@@ -676,7 +676,7 @@
          * Start selection
          */
         function startSelection() {
-            $(document).off('mousemove', startSelection);
+            $(document).unbind('mousemove', startSelection);
             adjust();
 
             x2 = x1;
@@ -691,9 +691,9 @@
 
             shown = true;
 
-            $(document).off('mouseup', cancelSelection)
-                .on('mousemove',selectingMouseMove).one('mouseup', docMouseUp);
-            $box.off('mousemove', areaMouseMove);
+            $(document).unbind('mouseup', cancelSelection)
+                .mousemove(selectingMouseMove).one('mouseup', docMouseUp);
+            $box.unbind('mousemove', areaMouseMove);
 
             options.onSelectStart(img, getSelection());
         }
@@ -702,7 +702,7 @@
          * Cancel selection
          */
         function cancelSelection() {
-            $(document).off('mousemove', startSelection)
+            $(document).unbind('mousemove', startSelection)
                 .unbind('mouseup', cancelSelection);
             hide($box.add($outer));
 
@@ -731,7 +731,7 @@
             startY = y1 = evY(event);
 
             /* Selection will start when the mouse is moved */
-            $(document).on('mousemove',startSelection).on('mouseup',cancelSelection);
+            $(document).mousemove(startSelection).mouseup(cancelSelection);
 
             return false;
         }
@@ -906,7 +906,7 @@
                      * The font-size property needs to be set to zero, otherwise
                      * Internet Explorer makes the handles too large
                      */
-                    fontSize: '0',
+                    fontSize: 0,
                     zIndex: zIndex + 1 || 1
                 });
 
@@ -985,24 +985,24 @@
             /* Calculate the aspect ratio factor */
             aspectRatio = (d = (options.aspectRatio || '').split(/:/))[0] / d[1];
 
-            $img.add($outer).off('mousedown', imgMouseDown);
+            $img.add($outer).unbind('mousedown', imgMouseDown);
 
             if (options.disable || options.enable === false) {
                 /* Disable the plugin */
-                $box.off('mousemove', areaMouseMove).off('mousedown', areaMouseDown);
-                $(window).off('resize', windowResize);
+                $box.unbind('mousemove', areaMouseMove).unbind('mousedown', areaMouseDown);
+                $(window).unbind('resize', windowResize);
             }
             else {
                 if (options.enable || options.disable === false) {
                     /* Enable the plugin */
                     if (options.resizable || options.movable)
-                        $box.on('mousemove',areaMouseMove).on('mousedown',areaMouseDown);
+                        $box.mousemove(areaMouseMove).mousedown(areaMouseDown);
 
-                    $(window).on('resize',windowResize);
+                    $(window).resize(windowResize);
                 }
 
                 if (!options.persistent)
-                    $img.add($outer).on('mousedown',imgMouseDown);
+                    $img.add($outer).mousedown(imgMouseDown);
             }
 
             options.enable = options.disable = undefined;
@@ -1094,8 +1094,8 @@
             zIndex = max(zIndex,
                 !isNaN($p.css('z-index')) ? $p.css('z-index') : zIndex);
             /* Also check if any of the ancestor elements has fixed position */
-            // if ($p.css('position') == 'fixed')
-            //     position = 'fixed';
+            if ($p.css('position') == 'fixed')
+                position = 'fixed';
 
             $p = $p.parent(':not(body)');
         }
@@ -1135,7 +1135,7 @@
         $box.add($outer).css({ visibility: 'hidden', position: position,
             overflow: 'hidden', zIndex: zIndex || '0' });
         $box.css({ zIndex: zIndex + 2 || 2 });
-        $area.add($border).css({ position: 'absolute', fontSize: '0' });
+        $area.add($border).css({ position: 'absolute', fontSize: 0 });
 
         /*
          * If the image has been fully loaded, or if it is not really an image (eg.
