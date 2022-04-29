@@ -7,8 +7,6 @@ on:
       - '4.0'
     paths-ignore:
       - 'docs/**'
-  release:
-    types: [created]
 
 jobs:
   prepare_ui_test_matrix:
@@ -21,7 +19,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Setup Node
-        uses: actions/setup-node@v3.3.0
+        uses: actions/setup-node@v3.1.1
         with:
           node-version: '12'
       - id: set-matrix
@@ -62,7 +60,7 @@ jobs:
         run: ./refine build
 
       - name: Setup Node
-        uses: actions/setup-node@v3.3.0
+        uses: actions/setup-node@v3.1.1
         with:
           node-version: '12'
 
@@ -175,6 +173,10 @@ jobs:
     - name: Build and test with Maven
       run: mvn jacoco:prepare-agent test
 
+    - name: Submit test coverage to Coveralls
+      run: |
+        mvn jacoco:report coveralls:report -DrepoToken=${{ env.COVERALLS_TOKEN }} -DpullRequest=${{ github.event.number }} -DserviceName="GitHub Actions" -DserviceBuildNumber=${{ env.GITHUB_RUN_ID }} -Dbranch=master
+
     - name: Install webapp dependencies
       run: cd main/webapp && npm install
 
@@ -216,8 +218,8 @@ jobs:
 
     - name: Apply patch to insert Google API credentials
       run: |
-        gpg --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output .github/workflows/release/gdata.patch --decrypt .github/workflows/release/gdata.patch.asc
-        git am .github/workflows/release/gdata.patch
+        gpg --pinentry-mode loopback --passphrase "${{ secrets.GPG_PASSPHRASE }}" --output .github/workflows/release/gdata.patch --decrypt packaging/apple_certs/gdata.patch.asc
+        git am packaging/apple_certs/gdata.patch
         git reset HEAD^
 
     - name: Install webapp dependencies
@@ -232,8 +234,7 @@ jobs:
         APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
 
     - name: Upload snapshot releases to OSSRH
-      run: |
-        mvn deploy -DskipTests=true -DrepositoryId=ossrh
+      run: mvn deploy -DskipTests=true
       env:
         OSSRH_USER: ${{ secrets.OSSRH_USER }}
         OSSRH_PASS: ${{ secrets.OSSRH_PASS }}
