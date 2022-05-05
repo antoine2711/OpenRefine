@@ -111,7 +111,7 @@ UrlImportingSourceUI.prototype.attachUI = function(bodyDiv) {
     let trashButton = $('<a href="javascript:{}"><span class="ui-icon ui-icon-trash"></span></a>');
     trashButton.attr("title",$.i18n("core-index-import/remove-row"));
     newRow.find('td').append(trashButton);
-    trashButton.on('click',function (e) {
+    trashButton.click(function (e) {
       e.preventDefault();
       $(this).parent().parent().remove();
     })
@@ -120,7 +120,7 @@ UrlImportingSourceUI.prototype.attachUI = function(bodyDiv) {
 };
 
 UrlImportingSourceUI.prototype.focus = function() {
-  this._elmts.urlInput.trigger('focus');
+  this._elmts.urlInput.focus();
 };
 
 function ClipboardImportingSourceUI(controller) {
@@ -143,7 +143,7 @@ ClipboardImportingSourceUI.prototype.attachUI = function(bodyDiv) {
   this._elmts.nextButton.html($.i18n('core-buttons/next'));
   
   this._elmts.nextButton.on('click',function(evt) {
-    if (jQueryTrim(self._elmts.textInput[0].value).length === 0) {
+    if ($.trim(self._elmts.textInput[0].value).length === 0) {
       window.alert($.i18n('core-index-import/warning-clipboard'));
     } else {
       self._controller.startImportJob(self._elmts.form, $.i18n('core-index-import/uploading-pasted-data'));
