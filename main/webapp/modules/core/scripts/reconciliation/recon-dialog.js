@@ -51,7 +51,6 @@ ReconDialog.prototype._createDialog = function() {
   this._elmts.addStandardServiceButton.html($.i18n('core-buttons/add-std-svc')+"...");
   this._elmts.reconcileButton.html($.i18n('core-buttons/start-recon'));
   this._elmts.cancelButton.html($.i18n('core-buttons/cancel'));
-  this._elmts.discoverServicesButton.html($.i18n('core-buttons/discover-services'));
 
   this._elmts.addStandardServiceButton.on('click',function() { self._onAddStandardService(); });
 
@@ -220,7 +219,7 @@ ReconDialog.prototype._onAddStandardService = function() {
 
   elmts.cancelButton.on('click',dismiss);
   elmts.form.on('submit',function() {
-    var url = jQueryTrim(elmts.input[0].value);
+    var url = $.trim(elmts.input[0].value);
     if (url.length > 0) {
       ReconciliationManager.registerStandardService(url, function(index) {
         self._refresh(index);
