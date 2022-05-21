@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  ******************************************************************************/
-
 package org.openrefine.wikidata.schema;
 
 import java.util.Collections;
@@ -68,7 +67,7 @@ public class WbItemVariableTest extends WbVariableTest<ItemIdValue> {
         Cell cell = new Cell("some value", recon);
         isSkipped(cell);
     }
-
+    
     @Test
     public void testInvalidSpace() {
         Recon recon = Recon.makeWikidataRecon(34989L);
@@ -89,16 +88,6 @@ public class WbItemVariableTest extends WbVariableTest<ItemIdValue> {
         isSkipped((Cell) null);
     }
     
-    @Test
-    public void testNullStringValue() {
-        isSkipped((String) null);
-    }
-
-    @Test
-    public void testNullCell() {
-        isSkipped((Cell) null);
-    }
-
     @Test
     public void testNullStringValue() {
         isSkipped((String) null);

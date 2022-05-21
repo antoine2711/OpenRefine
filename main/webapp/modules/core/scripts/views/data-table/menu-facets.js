@@ -111,14 +111,14 @@ DataTableColumnHeaderUI.extendMenu(function(column, columnHeaderUI, menu) {
     {},
     {
       id: "core/custom-text-facet",
-      label: $.i18n('core-views/custom-text-facet'),
+      label: $.i18n('core-views/custom-text-facet')+'...',
       click: function() {
         doFilterByExpressionPrompt(null, "list");
       }
     },
     {
       id: "core/custom-numeric-facet",
-      label: $.i18n('core-views/custom-numeric'),
+      label: $.i18n('core-views/custom-numeric')+'...',
       click: function() {
         doFilterByExpressionPrompt(null, "range");
       }
@@ -147,14 +147,13 @@ DataTableColumnHeaderUI.extendMenu(function(column, columnHeaderUI, menu) {
           id: "core/duplicates-facet",
           label: $.i18n('core-views/duplicates-facet'),
           click: function() {
-            let columnName = column.name.replace(/'/g, "\\'");
             ui.browsingEngine.addFacet(
                 "list",
                 {
                   "name": column.name,
                   "columnName": column.name,
-                  "expression": "facetCount(value, 'value', '" +
-                  columnName + "') > 1"
+                  "expression": "facetCount(value, 'value', '" + column.name + "') > 1",
+                  "id": 15
                 }
             );
           }

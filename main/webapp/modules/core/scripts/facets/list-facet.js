@@ -171,8 +171,7 @@ class ListFacet extends Facet {
     );
     
     this._elmts = DOM.bind(this._div);
-    this._elmts.facetTitle.text(this._config.name);
-
+    
     this._elmts.removeButton.attr("title", $.i18n('core-facets/remove-facet'));
     this._elmts.minimizeButton.attr("title", $.i18n('core-facets/minimize-facet'));
     this._elmts.titleSpan.attr("title", this.facetToolTipText);
@@ -204,32 +203,31 @@ class ListFacet extends Facet {
         self._update(true);
       }
     });
-  });
-  
-  this._elmts.sortByNameLink.click(function() {
-    if (self._options.sort != "name") {
-      self._options.sort = "name";
-      self._reSortChoices();
-      self._update(true);
-    }
-  });
-
-  this._elmts.clusterLink.click(function() { self._doEdit(); });
-  if (this._config.expression != "value" && this._config.expression != "grel:value") {
-    this._elmts.clusterLink.hide();
-  }
-
-  if (!("scroll" in this._options) || this._options.scroll) {
-    this._elmts.bodyDiv.addClass("facet-body-scrollable");
-    this._elmts.bodyDiv.resizable({
-      minHeight: 30,
-      handles: 's',
-      stop: function(event, ui) {
-        event.target.style.width = "auto"; // don't force the width
+    this._elmts.sortByNameLink.click(function() {
+      if (self._options.sort != "name") {
+        self._options.sort = "name";
+        self._reSortChoices();
+        self._update(true);
       }
     });
-  }
-  }
+
+    this._elmts.clusterLink.click(function() { self._doEdit(); });
+    if (this._config.expression != "value" && this._config.expression != "grel:value") {
+      this._elmts.clusterLink.hide();
+    }
+
+    if (!("scroll" in this._options) || this._options.scroll) {
+      this._elmts.bodyDiv.addClass("facet-body-scrollable");
+      this._elmts.bodyDiv.resizable({
+        minHeight: 30,
+        handles: 's',
+        stop: function(event, ui) {
+          event.target.style.width = "auto"; // don't force the width
+        }
+      });
+    }
+  };
+
   _copyChoices() {
     var self = this;
     var frame = DialogSystem.createDialog();
@@ -528,18 +526,6 @@ class ListFacet extends Facet {
     new ClusteringDialog(this._config.columnName, this._config.expression);
   };
 
-	_editTitle = function() {
-		var currentFacetTitle = this._config.name;
-	
-		var promptText = "The current name of the facet is: "+ currentFacetTitle +".\n What name do you want now?";
-		var newFacetTitle = prompt(promptText, currentFacetTitle);
-
-		if (newFacetTitle != null) {
-			this._config.name = newFacetTitle;
-			this._elmts.titleSpan.text(this._config.name);
-		}
-	};
-
   _editChoice(choice, choiceDiv) {
     var self = this;
 
@@ -753,3 +739,8 @@ class ListFacet extends Facet {
     }
   };
 };
+
+ListFacet.reconstruct = function(div, uiState) {
+  return new ListFacet(div, uiState.c, uiState.o, uiState.s);
+};
+
