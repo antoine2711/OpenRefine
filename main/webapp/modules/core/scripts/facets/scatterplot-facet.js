@@ -147,7 +147,6 @@ class ScatterplotFacet extends Facet {
     this._elmts.titleSpan.on('click',function() { self._editTitle(); });
     this._elmts.removeButton.on('click',function() { self._remove(); });
     this._elmts.minimizeButton.on('click',function() { self._minimize(); });
-    this._elmts.titleSpan.on('click',function() { self._editTitle(); });
 
     this._elmts.resetButton.on('click',function() {
       self.reset();
