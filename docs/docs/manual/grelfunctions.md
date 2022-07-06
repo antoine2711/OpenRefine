@@ -141,6 +141,12 @@ You cannot find or replace nulls with this, as null is not a string. You can ins
 
 Returns the string obtained by replacing a character in s, identified by find, with the corresponding character identified in replace. For example, `"Téxt thát was optícálly recógnízéd".replaceChars("áéíóú", "aeiou")` returns the string “Text that was optically recognized”. You cannot use this to replace a single character with more than one character.
 
+###### replaceEach(s, a find, a replace) {#replaceeach-s-a-find-a-replace}
+
+Returns the string obtained by replacing each element in s of a find array with the corresponding element of a replace array, sequentially. For example, `"The cow jumps over the moon and moos".replaceEachFromArrays(["th", "moo"], ["ex", "mee"])` returns the string “The cow jumps over exe meen and mees”.
+
+The length of the find array must be the same as the length of the replace array. If the length of the find array is greater than the length of the replace array, the last element of the replace array is used for all remaining elements in the find array.
+
 ###### find(s, sub or p) {#finds-sub-or-p}
 
 Outputs an array of all consecutive substrings inside string s that match the substring or [regex](expressions#grel-supported-regex) pattern p. For example, `"abeadsabmoloei".find(/[aeio]+/)` would result in the array [ "a", "ea", "a", "o", "oei" ].
@@ -174,9 +180,19 @@ Returns a string converted to a number. Will attempt to convert other formats in
 
 Returns the array of strings obtained by splitting s by sep. The separator can be either a string or a regex pattern. For example, `"fire, water, earth, air".split(",")` returns an array of 4 strings: [ "fire", " water", " earth", " air" ]. Note that the space characters are retained but the separator is removed. If you include “true” for the preserveTokens boolean, empty segments are preserved.
 
-###### splitByLengths(s, n1, n2, ...) {#splitbylengthss-n1-n2-}
+###### splitByLengths(s, n1, n2, ...) {#splitbylengthss-n1-n2}
 
-Returns the array of strings obtained by splitting s into substrings with the given lengths. For example, `"internationalization".splitByLengths(5, 6, 3)` returns an array of 3 strings: [ "inter", "nation", "ali" ]. Excess characters are discarded.
+Returns the array of strings obtained by splitting s into substrings with the given lengths. For example, `"internationalization".splitByLengths(5, 6, 3)` returns an array of 3 strings: [ "inter", "nation", "ali" ]. Excess characters are discarded from the output array.
+
+Like other functions that return an array, it also allows array slicing on the returned array. In that case, it returns the array consisting of a subset of elements between i1 and (i2 – 1).
+For example,
+
+|Expression|Result|
+|-|-|
+|`"internationalization".splitByLengths(5, 6, 3)[0,3]` |Returns an array of 3 strings: [ "inter", "nation", “ali” .|
+|`"internationalization".splitByLengths(5, 6, 3)[0,2]` |Returns an array of 2 strings: [ "inter", "nation" ]|
+|`"internationalization".splitByLengths(5, 6, 3)[1,3]` |Returns an array of 2 string: [ "nation", “ali” ]|
+|`"internationalization".splitByLengths(5, 6, 3)[1]` |Returns string at position 1: "nation" |
 
 ###### smartSplit(s, s or p sep (optional)) {#smartsplits-s-or-p-sep-optional}
 
@@ -213,6 +229,14 @@ Escapes s in the given escaping mode. The mode can be one of: "html", "xml", "cs
 ###### unescape(s, s mode) {#unescapes-s-mode}
 
 Unescapes s in the given escaping mode. The mode can be one of: "html", "xml", "csv", "url", "javascript". Note that quotes are required around your mode. See the [recipes](https://github.com/OpenRefine/OpenRefine/wiki/Recipes#atampampt----att) for examples of escaping and unescaping. 
+
+###### encode(s, s encoding) {#encodes-s-encoding}
+
+Encodes the string, s in the specified encoding. The encoding can be one of: "base16", "base32", "base32hex", "base64", "base64url". For example, `encode("abc", "base64")` returns "YWJj".
+
+###### decode(s, s encoding) {#decodes-s-encoding}
+
+Decodes the string, s in the specified encoding. The encoding can be one of: "base16", "base32", "base32hex", "base64", "base64url". For example, `decode("YWJj", "base64")` returns "abc".
 
 ###### md5(o) {#md5o}
 
@@ -251,6 +275,12 @@ Returns an array of strings describing each character of s in their full unicode
 ###### unicodeType(s) {#unicodetypes}
 
 Returns an array of strings describing each character of s by their unicode type. For example, `"Bernice Rubens".unicodeType()` outputs [ "uppercase letter", "lowercase letter", "lowercase letter", "lowercase letter", "lowercase letter", "lowercase letter", "lowercase letter", "space separator", "uppercase letter", "lowercase letter", "lowercase letter", "lowercase letter", "lowercase letter", "lowercase letter" ].
+
+### Translating
+
+###### detectLanguage(s) {#detectlanguages}
+
+Returns a string locale describing the language of s, with support for 71 languages as stated [here](https://github.com/optimaize/language-detector#71-built-in-language-profiles). For example, `"Hello, world!".detectLanguage()` outputs "en".
 
 ## Format-based functions (JSON, HTML, XML) {#format-based-functions-json-html-xml}
 
@@ -333,6 +363,20 @@ Returns the inner XML elements of an XML element. Does not return the text direc
 
 ###### ownText(element) {#owntextelement}
 Returns the text directly inside the selected XML or HTML element only, ignoring text inside children elements (for this, use innerXml()). Use it in conjunction with a parser and select() to provide an element.
+
+### URI parsing {#uri-parsing}
+
+###### parseUri(s) {#parseUris}
+Given a valid URI string (for example: https://www.openrefine.org:80/documentation#download?format=xml&os=mac), parseUri() returns a JSON object with the following properties:
+ - `scheme`: The scheme of the URI, e.g. `http`
+ - `host`: the host of the URI (e.g. `www.openrefine.org`)
+ - `port`: the port of the URI (e.g. `80`)
+ - `path`: the path of the URI (e.g. `/documentation`)
+ - `query`: the query of the URI (e.g. `format=xml&os=mac`)
+ - `authority`: the authority of the URI (e.g. `www.openrefine.org:80`)
+ - `fragment`: the fragment of the URI (e.g. `download`)
+ - `query_params`: the query of the URI as an object (e.g. `{format: "xml", os: "mac"}`)
+
 
 ## Array functions {#array-functions}
 
@@ -451,6 +495,10 @@ OpenRefine supports the following values for timeUnit:
 | nano | Nanoseconds | Number | value.datePart("n") → 789000 |
 | nanos | Nanoseconds | Number | value.datePart("n") → 789000 |
 | time | Milliseconds between input and the [Unix Epoch](https://en.wikipedia.org/wiki/Unix_time) | Number | value.datePart("time") → 1394775004000 |
+
+###### timeSinceUnixEpochToDate(duration, scale)
+
+Converts a time as measured by the duration since the Unix Epoch (1970-01-01) to a date object. The second parameter indicates the unit of the duration, and can be `"second"`, `"millisecond"` or `"microsecond"`. If the unit is not provided, it is assumed to be `"second"`.
 
 ## Math functions {#math-functions}
 
