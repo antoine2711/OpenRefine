@@ -79,11 +79,11 @@ class ListFacet extends Facet {
         columnName: this._config.columnName,
         expression: this._config.expression,
         omitBlank: "omitBlank" in this._config ? this._config.omitBlank : false,
-            omitError: "omitError" in this._config ? this._config.omitError : false,
-                selection: [],
-                selectBlank: this._blankChoice !== null && this._blankChoice.s,
-                selectError: this._errorChoice !== null && this._errorChoice.s,
-                invert: this._config.invert
+        omitError: "omitError" in this._config ? this._config.omitError : false,
+        selection: [],
+        selectBlank: this._blankChoice !== null && this._blankChoice.s,
+        selectError: this._errorChoice !== null && this._errorChoice.s,
+        invert: this._config.invert
     };
     for (var i = 0; i < this._selection.length; i++) {
       var choice = {
@@ -143,20 +143,20 @@ class ListFacet extends Facet {
       '<div class="facet-title" bind="facetTitle">' +
         '<div class="grid-layout layout-tightest layout-full"><table><tr>' +
           '<td width="1%">' +
-            '<a href="javascript:{}" title="'+$.i18n('core-facets/remove-facet')+'" class="facet-title-remove" bind="removeButton">&nbsp;</a>' +
+            '<a href="javascript:{}"  class="facet-title-remove" bind="removeButton">&nbsp;</a>' +
           '</td>' +
           '<td width="1%">' +
-            '<a href="javascript:{}" title="'+$.i18n('core-facets/minimize-facet')+'" class="facet-title-minimize" bind="minimizeButton">&nbsp;</a>' +
+            '<a href="javascript:{}" class="facet-title-minimize" bind="minimizeButton">&nbsp;</a>' +
           '</td>' +
           '<td>' +
             '<a href="javascript:{}" class="facet-choice-link" bind="resetButton">'+$.i18n('core-facets/reset')+'</a>' +
             '<a href="javascript:{}" class="facet-choice-link" bind="invertButton">'+$.i18n('core-facets/invert')+'</a>' +
             '<a href="javascript:{}" class="facet-choice-link" bind="changeButton">'+$.i18n('core-facets/change')+'</a>' +
-            '<span bind="titleSpan"></span>' +
+            '<span class="facet-title-span" bind="titleSpan"></span>' +
           '</td>' +
         '</tr></table></div>' +
       '</div>' +
-      '<div class="facet-expression" bind="expressionDiv" title="'+$.i18n('core-facets/click-to-edit')+'"></div>' +
+      '<div class="facet-expression" bind="expressionDiv"></div>' +
       '<div class="facet-controls" bind="controlsDiv" style="display:none;">' +
         '<a bind="choiceCountContainer" class="action" href="javascript:{}"></a> ' +
         '<span class="facet-controls-sortControls" bind="sortGroup">'+$.i18n('core-facets/sort-by')+': ' +
@@ -169,10 +169,19 @@ class ListFacet extends Facet {
         '<div class="facet-body-inner" bind="bodyInnerDiv"></div>' +
       '</div>'
     );
+    
     this._elmts = DOM.bind(this._div);
+    
+    this._elmts.removeButton.attr("title", $.i18n('core-facets/remove-facet'));
+    this._elmts.minimizeButton.attr("title", $.i18n('core-facets/minimize-facet'));
+    this._elmts.titleSpan.attr("title", this.facetToolTipText);
+    this._elmts.expressionDiv.attr("title", $.i18n('core-facets/click-to-edit'));
+    this._elmts.changeButton.attr("title", $.i18n('core-facets/current-exp')+": " + this._config.expression);
 
+    this._elmts.expressionDiv.text(this._config.expression).hide();
     this._elmts.titleSpan.text(this._config.name);
-    this._elmts.changeButton.attr("title",$.i18n('core-facets/current-exp')+": " + this._config.expression).on('click',function() {
+    
+    this._elmts.changeButton.on('click',function() {
       self._elmts.expressionDiv.slideToggle(100, function() {
         if (self._elmts.expressionDiv.css("display") != "none") {
           self._editExpression();
@@ -180,9 +189,10 @@ class ListFacet extends Facet {
       });
     });
     
-    this._elmts.expressionDiv.text(this._config.expression).hide().on('click',function() { self._editExpression(); });
+    this._elmts.expressionDiv.on('click',function() { self._editExpression(); });
     this._elmts.removeButton.on('click',function() { self._remove(); });
     this._elmts.minimizeButton.on('click',function() { self._minimize(); });
+    this._elmts.titleSpan.on('click',function() { self._editTitle(); });
     this._elmts.resetButton.on('click',function() { self._reset(); });
     this._elmts.invertButton.on('click',function() { self._invert(); });
 
@@ -515,6 +525,18 @@ class ListFacet extends Facet {
   _doEdit() {
     new ClusteringDialog(this._config.columnName, this._config.expression);
   };
+
+  _editTitle() {
+		var currentFacetTitle = this._config.name;
+	
+		var promptText = "The current name of the facet is: "+ currentFacetTitle +".\n What name do you want now?";
+		var newFacetTitle = prompt(promptText, currentFacetTitle);
+
+		if (newFacetTitle != null) {
+			this._config.name = newFacetTitle;
+			this._elmts.titleSpan.text(this._config.name);
+		}
+	};
 
   _editChoice(choice, choiceDiv) {
     var self = this;
