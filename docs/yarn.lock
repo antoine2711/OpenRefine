@@ -1432,9 +1432,9 @@
     to-fast-properties "^2.0.0"
 
 "@crowdin/cli@3":
-  version "3.7.9"
-  resolved "https://registry.yarnpkg.com/@crowdin/cli/-/cli-3.7.9.tgz#3a918642c6ceee6fa8f9407092f9f7328f349f3b"
-  integrity sha512-UmGWBuRI0atIMjqtDf7SbyyJNAeB5xW2E8q7R+rtkeqY6LqyNtb+sKS2deMLhTH93AtWfDmGFt4TzOTeILvCaA==
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/@crowdin/cli/-/cli-3.8.0.tgz#636b9aea680dd21ece9209f9b5e920637542aba2"
+  integrity sha512-DKgzCGOaBam3HwVzXkuPkd6CAFGhm9jr/3xqXHo5jV3U2wf68glkPJEvkIuzt8m36CrlqQwlCkSx6KrlEO2t0g==
   dependencies:
     njre "^0.2.0"
     shelljs "^0.8.4"
