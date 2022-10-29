@@ -39,7 +39,7 @@ class ListFacet extends Facet {
       this._options.sort = "name";
     }
 
-    this._selection = selection || [];
+    this._selection = selection || config.selection || [];
 
     if (!("invert" in this._config)) {
       this._config.invert = false;
@@ -304,7 +304,7 @@ class ListFacet extends Facet {
         .addClass("action")
         .addClass("secondary")
         .appendTo(messageDiv)
-        .click(function() {
+        .on('click',function() {
           self._setChoiceCountLimit(self._data.choiceCount);
         });
         
@@ -631,6 +631,8 @@ class ListFacet extends Facet {
     })
     .trigger('select')
     .trigger('focus');
+
+    setInitialHeightTextArea(elmts.textarea[0]);
 
     elmts.cancelButton.on('click',function() {
       MenuSystem.dismissAll();

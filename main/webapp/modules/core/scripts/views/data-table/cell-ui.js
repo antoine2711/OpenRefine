@@ -365,6 +365,7 @@ DataTableCellUI.prototype._searchForMatch = function(suggestOptions) {
   var elmts = DOM.bind(frame);
   
   elmts.dialogHeader.html($.i18n('core-views/search-match'));
+  elmts.input.attr('aria-label',$.i18n('core-views/item-to-match'));
   elmts.or_views_searchFor.html($.i18n('core-views/search-for'));
   elmts.or_views_matchOther.html($.i18n('core-views/match-other'));
   elmts.or_views_matchThis.html($.i18n('core-views/match-this'));
@@ -589,6 +590,7 @@ DataTableCellUI.prototype._startEdit = function(elmt) {
   var elmts = DOM.bind(menu);
 
   elmts.or_views_dataType.html($.i18n('core-views/data-type'));
+  elmts.textarea.attr('aria-label',$.i18n('core-views/cell-content'));
   elmts.or_views_text.html($.i18n('core-views/text'));
   elmts.or_views_number.html($.i18n('core-views/number'));
   elmts.or_views_boolean.html($.i18n('core-views/boolean'));
@@ -603,6 +605,21 @@ DataTableCellUI.prototype._startEdit = function(elmt) {
   var cellDataType = typeof originalContent === "string" ? "text" : typeof originalContent;
   cellDataType = (this._cell !== null && "t" in this._cell && this._cell.t !=  null) ? this._cell.t : cellDataType;
   elmts.typeSelect.val(cellDataType);
+
+  elmts.typeSelect.on('change', function() {
+    var newType = elmts.typeSelect.val();
+    if (newType === "date") {
+      elmts.cell_help_text.html($.i18n('core-views/cell-edit-date-help'));
+      $(elmts.cell_help_text).show();
+    } else {
+      $(elmts.cell_help_text).hide();
+    }
+  });
+
+  if (cellDataType === "date") {
+    elmts.cell_help_text.html($.i18n('core-views/cell-edit-date-help'));
+    $(elmts.cell_help_text).show();
+  }
 
   MenuSystem.showMenu(menu, function(){});
   MenuSystem.positionMenuLeftRight(menu, $(this._td));
@@ -628,9 +645,6 @@ DataTableCellUI.prototype._startEdit = function(elmt) {
       value = ("true" == text);
     } else if (type == "date") {
       value = Date.parse(text);
-      if (!value) {
-        value = DateTimeUtil.parseIso8601DateTime(text);
-      }
       if (!value) {
         alert($.i18n('core-views/not-valid-date'));
         return;
@@ -700,6 +714,8 @@ DataTableCellUI.prototype._startEdit = function(elmt) {
   })
   .trigger('select')
   .trigger('focus');
+
+  setInitialHeightTextArea(elmts.textarea[0]);
 
   elmts.cancelButton.on('click',function() {
     MenuSystem.dismissAll();

@@ -184,7 +184,7 @@ class RangeFacet extends Facet {
     this._elmts.minimizeButton.on('click',function() { self._minimize(); });
     this._elmts.titleSpan.on('click',function() { self._editTitle(); });
 
-    this._histogram = new HistogramWidget(this._elmts.histogramDiv, { binColors: [ "#bbccff", "#88aaee" ] });
+    this._histogram = new HistogramWidget(this._elmts.histogramDiv, { binColors: [ "#668CFF", "#174092" ] });
     this._sliderWidget = new SliderWidget(this._elmts.sliderWidgetDiv);
 
     this._elmts.sliderWidgetDiv.on("slide", function(evt, data) {
